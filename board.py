@@ -7,7 +7,7 @@ from typing import Iterator, Dict, Optional
 
 import attr
 
-SIZE = 9  # This will be fixed for us
+import consts
 
 
 class PointFormatError(Exception):
@@ -43,8 +43,8 @@ class Point(object):
         if format == "A1":
             letter = first.upper()
             col = ord(letter) - ord("A")
-            # Start from bottom with number=1 maps to SIZE-1
-            row = SIZE - number
+            # Start from bottom with number=1 maps to consts.SIZE-1
+            row = consts.SIZE - number
             return Point(row=row, col=col)
         if format == "SGF":
             first = first.lower()
@@ -57,8 +57,8 @@ class Point(object):
 
 def all_points() -> Iterator[Point]:
     """Loops through all the points on the board."""
-    for i in range(SIZE):
-        for j in range(SIZE):
+    for i in range(consts.SIZE):
+        for j in range(consts.SIZE):
             yield Point(row=i, col=j)
 
 
@@ -93,15 +93,15 @@ class Board(object):
         def stone_char(stone: Optional[Player]) -> str:
             STONE_CHAR = {
                 Player.Black: '#',
-                Player.White: 'o',
+                Player.White: 'O',
             }
             BLANK_CHAR = '.'
-            return STONE_CHAR.get(stone, default=BLANK_CHAR)
+            return STONE_CHAR.get(stone, BLANK_CHAR)
 
         result_rows = list()
-        for r in range(SIZE):
+        for r in range(consts.SIZE):
             row = list()
-            for c in range(SIZE):
+            for c in range(consts.SIZE):
                 piece = self._grid[Point(row=r, col=c)]
                 row.append(stone_char(piece))
             result_rows.append("".join(row))
