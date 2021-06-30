@@ -2,8 +2,7 @@
 representing either a tsumego problem or a game at a point in time."""
 
 import enum
-import json
-from typing import Iterator, Dict, Optional
+from typing import Iterator, Dict, List, Optional
 
 import attr
 
@@ -112,27 +111,36 @@ class MalformedJsonError(Exception):
     pass
 
 
-def boardFromJson(json_str: str) -> Board:
+# BlackWhite board strings as read from JSON files in classes dir.
+BwBoardStr = Dict[str, List[str]]
+
+def boardFromBwBoardStr(bw: BwBoardStr) -> Board:
     """Creates a board from a json
 
     Arguments:
-        json_str: A json
+        bw: A dict with keys being "black" and "white" and values being lists of
+            strings representing places where stones of that color are placed.
+
+            For example, {"black": {"aa", "ab"}, "white": {"bb"}} would place
+            two black stones in positions "aa" and "ab" and one white stone in
+            position "bb".
+
+            These are SGF-style position names.  See Point.fromLabel for
+            acceptable format.
 
     Returns:
         A board that has only the specified black and white pieces.
     """
-    parsed = json.loads(json_str)
-
-    MUST_CONTAIN_FIELDS = ("blacks", "whites")
+    MUST_CONTAIN_FIELDS = ("black", "white")
     for field in MUST_CONTAIN_FIELDS:
-        if field not in parsed:
+        if field not in bw:
             raise MalformedJsonError(f"json missing field = {field}")
 
     result = Board()
 
-    for point_str in parsed["blacks"]:
+    for point_str in bw["black"]:
         result.place(point=Point.fromLabel(point_str), player=Player.Black)
-    for point_str in parsed["whites"]:
+    for point_str in bw["white"]:
         result.place(point=Point.fromLabel(point_str), player=Player.White)
 
     return result

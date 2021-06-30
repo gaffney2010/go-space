@@ -27,7 +27,6 @@ if __name__ == "__main__":
 
     all_boards = json.loads(raw_json)
     for b in all_boards["boards"]:
-        board_json = json.dumps(b)
-        print(board.boardFromJson(board_json).ascii_board())
+        print(board.boardFromBwBoardStr(b).ascii_board())
         print()
         print()
