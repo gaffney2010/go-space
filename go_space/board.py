@@ -6,7 +6,7 @@ from typing import Iterator, Dict, List, Optional
 
 import attr
 
-import consts
+from go_space import consts
 
 
 class PointFormatError(Exception):

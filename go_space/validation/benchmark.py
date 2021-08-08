@@ -2,7 +2,7 @@
 
 import numpy as np
 
-import board
+from go_space import board
 from validation import buhlmann
 
 

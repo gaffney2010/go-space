@@ -1,2 +1,8 @@
 # Local config
 local_config.py
+
+# Egg info? 
+*.egg-info/*
+
+# Pycache
+*__pycache__*
