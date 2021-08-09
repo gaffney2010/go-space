@@ -23,9 +23,10 @@ def make_embedding(dim: int) -> buhlmann.Embedding:
     return infoless_embedding
 
 
-# We found that random scores drop quickly until ~40, then level out.
-for d in range(10, 110, 10):
-    print("=================")
-    print(d)
-    print(buhlmann.computeBuhlmannOnClasses(make_embedding(d)))
-    print()
+if __name__ == "__main__":
+    # We found that random scores drop quickly until ~40, then level out.
+    for d in range(10, 110, 10):
+        print("=================")
+        print(d)
+        print(buhlmann.computeBuhlmannOnClasses(make_embedding(d)))
+        print()
