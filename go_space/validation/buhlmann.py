@@ -10,10 +10,7 @@ import attr
 import numpy as np
 
 from go_space import board, consts
-
-
-# Must be a constant dimension
-Embedding = Callable[[board.Board], np.ndarray]
+from go_space.embeddings import Embedding
 
 
 @attr.s
