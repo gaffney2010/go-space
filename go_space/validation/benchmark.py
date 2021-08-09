@@ -14,5 +14,6 @@ if __name__ == "__main__":
         print(buhlmann.computeBuhlmannOnClasses(embeddings.make_random_embedding(d)))
         print()
 
+    print("=================")
     print("Dumb embedding:")
     print(buhlmann.computeBuhlmannOnClasses(embeddings.dumb_embedding))
