@@ -66,6 +66,12 @@ class Player(enum.Enum):
     White = 2
 
 
+@attr.s(frozen=True)
+class Stone(object):
+    point: Point = attr.ib()
+    player: Player = attr.ib()
+
+
 class GoError(Exception):
     """Errors relating to the way that go is played."""
 
@@ -86,6 +92,12 @@ class Board(object):
             raise GoError("Tried to put piece on piece")
 
         self._grid[point] = player
+
+    def stones(self) -> Iterator[Stone]:
+        """Loop through all stones."""
+        for point, player in self._grid.items():
+            if player is not None:
+                yield Stone(point=point, player=player)
 
     def ascii_board(self) -> str:
         """Returns ASCII art for board"""
