@@ -1,0 +1,1 @@
+Save 9x9 SGFs to the _data folder.
