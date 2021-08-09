@@ -3,7 +3,7 @@
 import numpy as np
 
 from go_space import board
-from validation import buhlmann
+from go_space.validation import buhlmann
 
 
 def make_embedding(dim: int) -> buhlmann.Embedding:
@@ -23,6 +23,7 @@ def make_embedding(dim: int) -> buhlmann.Embedding:
     return infoless_embedding
 
 
+# We found that random scores drop quickly until ~40, then level out.
 for d in range(10, 110, 10):
     print("=================")
     print(d)

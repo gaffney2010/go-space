@@ -9,8 +9,7 @@ from typing import Callable, List
 import attr
 import numpy as np
 
-import board
-import consts
+from go_space import board, consts
 
 
 # Must be a constant dimension
