@@ -2,22 +2,38 @@
 representing either a tsumego problem or a game at a point in time."""
 
 import enum
-from typing import Iterator, Dict, List, Optional
+from typing import Iterator, Dict, List, Optional, Tuple
 
 import attr
 
 from go_space import consts
 
 
-class PointFormatError(Exception):
+class FormatError(Exception):
+    pass
+
+
+class PointFormatError(FormatError):
     pass
 
 
 @attr.s(frozen=True)
 class Point(object):
     # By convention start counting from top-left
-    row = attr.ib()  # Zero-indexed
-    col = attr.ib()  # Zero-indexed
+    row: int = attr.ib()  # Zero-indexed
+    col: int = attr.ib()  # Zero-indexed
+
+    def mod_row_col(self) -> Tuple[int, int]:
+        """Gives coordinates after rotating to get point in low-index quarter."""
+        half_board = consts.SIZE // 2 + 1
+        r, c = self.row, self.col
+
+        if r >= half_board:
+            r = consts.SIZE - 1 - r
+        if c >= half_board:
+            c = consts.SIZE - 1 - c
+
+        return r, c
 
     @classmethod
     def fromLabel(cls, label: str) -> "Point":
@@ -85,7 +101,13 @@ class Board(object):
             # No pieces placed yet
             self._grid[point] = None
 
-    def place(self, point: Point, player: Player):
+    def copy(self) -> "Board":
+        board_copy = Board()
+        # Deep copy _grid
+        board_copy._grid = {k: v for k, v in self._grid.items()}
+        return board_copy
+
+    def place(self, point: Point, player: Player) -> None:
         if point not in self._grid:
             raise GoError("Tried to place out of bounds")
         if self._grid[point] is not None:

@@ -32,13 +32,9 @@ def dumb_embedding(brd: board.Board) -> np.ndarray:
     half_board = consts.SIZE // 2 + 1
     def _embed_ind(stone: board.Stone):
         player = stone.player
-        row, col = stone.point.row, stone.point.col
+        row, col = stone.point.mod_row_col()
 
         # Only record up to symmetry
-        if row >= half_board:
-            row = consts.SIZE - 1 - row
-        if col >= half_board:
-            col = consts.SIZE - 1 - col
         ind = col * half_board + row
         if player == board.Player.Black:
             ind += (half_board ** 2)
