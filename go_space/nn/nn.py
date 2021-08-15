@@ -18,7 +18,7 @@ from typing import Iterator, Tuple
 import attr
 import chardet
 
-from go_space import board
+from go_space import board_lib
 from go_space.types import *
 
 _SAMPLE_FILE = "1514127723010001630.sgf"
@@ -57,7 +57,7 @@ def loop_game(sgf: str) -> Iterator[Tuple[Point, Player]]:
 
 @attr.s
 class Datum(object):
-    board: board.Board = attr.ib()
+    board: board_lib.Board = attr.ib()
     next_pt: Point = attr.ib()
 
 
@@ -67,25 +67,25 @@ def _triggering_move(point: Point) -> bool:
 
 
 def _get_data_from_sgf(sgf: str) -> Iterator[Datum]:
-    brd = board.Board()
+    board = board_lib.Board()
     for pt, player in loop_game(sgf):        
         if _triggering_move(pt):
-            yield Datum(board=brd.copy(), next_pt=pt)
+            yield Datum(board=board.copy(), next_pt=pt)
 
-        brd.place(pt, player)
+        board.place(pt, player)
 
 
 def _animate_board(sgf: str) -> None:
-    brd = board.Board()
+    board = board_lib.Board()
     for i, (pt, player) in enumerate(loop_game(sgf)):
         os.system("cls")
         print(f"Move {i}")
-        to_draw = brd.copy()
+        to_draw = board.copy()
         to_draw._grid[pt] = (
             Player.Spec1 if _triggering_move(pt) else Player.Spec2
         )
         print(to_draw.ascii_board())
-        brd.place(pt, player)
+        board.place(pt, player)
         time.sleep(1)
 
 
