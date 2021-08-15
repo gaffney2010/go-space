@@ -11,9 +11,12 @@
 # xxxx.....
 # .........
 
-from typing import Iterator
+import os
+import time
+from typing import Iterator, Tuple
 
 import attr
+import chardet
 
 from go_space import board
 
@@ -24,7 +27,7 @@ class SgfFormatError(board.FormatError):
     pass
 
 
-def point_player_from_sgf(move_str: str) -> None:
+def point_player_from_sgf(move_str: str) -> Tuple[board.Point, board.Player]:
     """Expect sgf_string to be like 'B[aa]'."""
     move_str = move_str.strip()
     if len(move_str) != 5:
@@ -41,6 +44,16 @@ def point_player_from_sgf(move_str: str) -> None:
     return board.Point.fromLabel(move_str[2:4]), player
 
 
+def loop_game(sgf: str) -> Iterator[Tuple[board.Point, board.Player]]:
+    for move_str in sgf.split(";"):
+        try:
+            pt, player = point_player_from_sgf(move_str[:5])
+        except board.FormatError:
+            # Doesn't represent a move
+            continue
+        yield pt, player
+
+
 @attr.s
 class Datum(object):
     board: board.Board = attr.ib()
@@ -54,14 +67,29 @@ def _triggering_move(point: board.Point) -> bool:
 
 def _get_data_from_sgf(sgf: str) -> Iterator[Datum]:
     brd = board.Board()
-    for move_str in sgf.split(";"):
-        try:
-            pt, player = point_player_from_sgf(move_str[:5])
-        except board.FormatError:
-            # Doesn't represent a move
-            continue
-        
+    for pt, player in loop_game(sgf):        
         if _triggering_move(pt):
             yield Datum(board=brd.copy(), next_pt=pt)
 
         brd.place(pt, player)
+
+
+def _animate_board(sgf: str) -> None:
+    brd = board.Board()
+    for i, (pt, player) in enumerate(loop_game(sgf)):
+        os.system("cls")
+        print(f"Move {i}")
+        to_draw = brd.copy()
+        to_draw._grid[pt] = (
+            board.Player.Spec1 if _triggering_move(pt) else board.Player.Spec2
+        )
+        print(to_draw.ascii_board())
+        brd.place(pt, player)
+        time.sleep(1)
+
+
+with open(_SAMPLE_FILE, "rb") as f:
+    bites = f.read()
+sample_sgf = bites.decode(encoding=chardet.detect(bites)["encoding"])
+    
+_animate_board(sample_sgf)

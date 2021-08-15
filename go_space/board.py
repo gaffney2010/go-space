@@ -80,6 +80,9 @@ def all_points() -> Iterator[Point]:
 class Player(enum.Enum):
     Black = 1
     White = 2
+    # Special "Players" for debugging
+    Spec1 = 3
+    Spec2 = 4
 
 
 @attr.s(frozen=True)
@@ -125,8 +128,10 @@ class Board(object):
         """Returns ASCII art for board"""
         def stone_char(stone: Optional[Player]) -> str:
             STONE_CHAR = {
-                Player.Black: '#',
-                Player.White: 'O',
+                Player.Black: "#",
+                Player.White: "O",
+                Player.Spec1: "?",
+                Player.Spec2: "!",
             }
             BLANK_CHAR = '.'
             return STONE_CHAR.get(stone, BLANK_CHAR)

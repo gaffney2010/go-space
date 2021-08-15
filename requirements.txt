@@ -1,4 +1,5 @@
 argparse
 attrs
+chardet
 numpy
 pathlib
