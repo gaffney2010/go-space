@@ -11,9 +11,11 @@
 # xxxx.....
 # .........
 
+import glob
 import os
+import pickle
 import time
-from typing import Iterator, Tuple
+from typing import Dict, Iterator, Tuple
 
 import attr
 import chardet
@@ -60,6 +62,21 @@ class Datum(object):
     board: board_lib.Board = attr.ib()
     next_pt: Point = attr.ib()
 
+    def to_dict(self) -> Dict:
+        """Should contain all the info needed to reconstruct."""
+        result = dict()
+        result["board"] = self.board.to_dict()
+        result["next_pt"] = self.next_pt.to_dict()
+        return result
+
+    @staticmethod
+    def from_dict(data) -> "Datum":
+        """Rebuild from one of the to_dict saved dicts."""
+        return Datum(
+            board=board_lib.Board.from_dict(data["board"]),
+            next_pt=Point.from_dict(data["next_pt"]),
+        )
+
 
 def _triggering_move(point: Point) -> bool:
     r, c = point.mod_row_col()
@@ -89,8 +106,29 @@ def _animate_board(sgf: str) -> None:
         time.sleep(3)
 
 
-with open(os.path.join(consts.TOP_LEVEL_PATH, "data", "_data", _SAMPLE_FILE), "rb") as f:
-    bites = f.read()
-sample_sgf = bites.decode(encoding=chardet.detect(bites)["encoding"])
-    
-_animate_board(sample_sgf)
+def read_game(fn):
+    with open(fn, "rb") as f:
+        bites = f.read()
+    return bites.decode(encoding=chardet.detect(bites)["encoding"])
+
+
+# _animate_board(read_game(os.path.join(consts.TOP_LEVEL_PATH, "data", "_data", _SAMPLE_FILE)))
+
+
+def translate_files(src_dir, tgt_dir):
+    BATCH_SIZE = 1000
+
+    current_batch = list()
+    batch_num = 0
+
+    for file in os.glob(os.path.join(src_dir, "*.sgf")):
+        for datum in _get_data_from_sgf(read_game(file)):
+            current_batch.append(datum.to_dict())
+            if len(current_batch) >= BATCH_SIZE:
+                # Dump
+                with open(f"{batch_num}.pickle", "wb") as f:
+                    pickle.dump(current_batch, f)
+                current_batch = list()
+                batch_num += 1
+    # Forget the rest of the data.
+

@@ -1,6 +1,7 @@
 """Contains the Board class which is a board filled in with pieces,
 representing either a tsumego problem or a game at a point in time."""
 
+import copy
 from typing import Iterator, Dict, List, Optional
 
 from go_space import consts
@@ -27,11 +28,20 @@ class Board(object):
             # No pieces placed yet
             self._grid[point] = None
 
+    def to_dict(self) -> Dict:
+        """Should contain all the info needed to reconstruct."""
+        return {"grid": copy.deepcopy(self._grid)}
+
+    @staticmethod
+    def from_dict(data: Dict) -> "Board":
+        """Rebuild from one of the to_dict saved dicts."""
+        result = Board()
+        result._grid = data["grid"]
+        return result
+
     def copy(self) -> "Board":
-        board_copy = Board()
-        # Deep copy _grid
-        board_copy._grid = {k: v for k, v in self._grid.items()}
-        return board_copy
+        """Deep copies"""
+        return Board.from_dict(self.to_dict())
 
     def place(self, point: Point, player: Player) -> None:
         if point not in self._grid:

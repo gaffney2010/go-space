@@ -6,7 +6,7 @@ local_config.py
 
 # Pycache
 *__pycache__*
+*.DS_Store
 
 # Don't include data
-go_space/data/_data/*
-go_space/data/_import.py
+go_space/data/_*

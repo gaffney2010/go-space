@@ -1,5 +1,5 @@
 import enum
-from typing import Tuple
+from typing import Dict, Tuple
 
 import attr
 
@@ -19,6 +19,15 @@ class Point(object):
     # By convention start counting from top-left
     row: int = attr.ib()  # Zero-indexed
     col: int = attr.ib()  # Zero-indexed
+
+    def to_dict(self) -> Dict:
+        """Should contain all the info needed to reconstruct."""
+        return {"row": self.row, "col": self.col}
+
+    @staticmethod
+    def from_dict(data: Dict) -> "Point":
+        """Rebuild from one of the to_dict saved dicts."""
+        return Point(**data)
 
     def mod_row_col(self) -> Tuple[int, int]:
         """Gives coordinates after rotating to get point in low-index quarter."""
