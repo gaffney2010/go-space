@@ -18,7 +18,7 @@ from typing import Iterator, Tuple
 import attr
 import chardet
 
-from go_space import board_lib
+from go_space import board_lib, consts
 from go_space.types import *
 
 _SAMPLE_FILE = "1514127723010001630.sgf"
@@ -78,7 +78,7 @@ def _get_data_from_sgf(sgf: str) -> Iterator[Datum]:
 def _animate_board(sgf: str) -> None:
     board = board_lib.Board()
     for i, (pt, player) in enumerate(loop_game(sgf)):
-        os.system("cls")
+        os.system("clear")
         print(f"Move {i}")
         to_draw = board.copy()
         to_draw._grid[pt] = (
@@ -86,10 +86,10 @@ def _animate_board(sgf: str) -> None:
         )
         print(to_draw.ascii_board())
         board.place(pt, player)
-        time.sleep(1)
+        time.sleep(3)
 
 
-with open(_SAMPLE_FILE, "rb") as f:
+with open(os.path.join(consts.TOP_LEVEL_PATH, "data", "_data", _SAMPLE_FILE), "rb") as f:
     bites = f.read()
 sample_sgf = bites.decode(encoding=chardet.detect(bites)["encoding"])
     

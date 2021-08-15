@@ -1,7 +1,7 @@
 """Contains the Board class which is a board filled in with pieces,
 representing either a tsumego problem or a game at a point in time."""
 
-from typing import Iterator, Dict, List, Optional, Tuple
+from typing import Iterator, Dict, List, Optional
 
 from go_space import consts
 from go_space.types import *

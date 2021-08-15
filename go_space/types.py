@@ -1,6 +1,9 @@
 import enum
+from typing import Tuple
 
 import attr
+
+from go_space import consts
 
 
 class FormatError(Exception):
