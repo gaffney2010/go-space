@@ -19,15 +19,16 @@ import attr
 import chardet
 
 from go_space import board
+from go_space.types import *
 
 _SAMPLE_FILE = "1514127723010001630.sgf"
 
 
-class SgfFormatError(board.FormatError):
+class SgfFormatError(FormatError):
     pass
 
 
-def point_player_from_sgf(move_str: str) -> Tuple[board.Point, board.Player]:
+def point_player_from_sgf(move_str: str) -> Tuple[Point, Player]:
     """Expect sgf_string to be like 'B[aa]'."""
     move_str = move_str.strip()
     if len(move_str) != 5:
@@ -35,20 +36,20 @@ def point_player_from_sgf(move_str: str) -> Tuple[board.Point, board.Player]:
     
     if move_str[0] == 'B':
         # TODO: Consider moving some of these types.
-        player = board.Player.Black
+        player = Player.Black
     elif move_str[0] == 'W':
-        player = board.Player.White
+        player = Player.White
     else:
         raise SgfFormatError
 
-    return board.Point.fromLabel(move_str[2:4]), player
+    return Point.fromLabel(move_str[2:4]), player
 
 
-def loop_game(sgf: str) -> Iterator[Tuple[board.Point, board.Player]]:
+def loop_game(sgf: str) -> Iterator[Tuple[Point, Player]]:
     for move_str in sgf.split(";"):
         try:
             pt, player = point_player_from_sgf(move_str[:5])
-        except board.FormatError:
+        except FormatError:
             # Doesn't represent a move
             continue
         yield pt, player
@@ -57,10 +58,10 @@ def loop_game(sgf: str) -> Iterator[Tuple[board.Point, board.Player]]:
 @attr.s
 class Datum(object):
     board: board.Board = attr.ib()
-    next_pt: board.Point = attr.ib()
+    next_pt: Point = attr.ib()
 
 
-def _triggering_move(point: board.Point) -> bool:
+def _triggering_move(point: Point) -> bool:
     r, c = point.mod_row_col()
     return r < 4 and c < 4
 
@@ -81,7 +82,7 @@ def _animate_board(sgf: str) -> None:
         print(f"Move {i}")
         to_draw = brd.copy()
         to_draw._grid[pt] = (
-            board.Player.Spec1 if _triggering_move(pt) else board.Player.Spec2
+            Player.Spec1 if _triggering_move(pt) else Player.Spec2
         )
         print(to_draw.ascii_board())
         brd.place(pt, player)
