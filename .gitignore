@@ -10,3 +10,6 @@ local_config.py
 
 # Don't include data
 go_space/data/_*
+
+# VSCODE NOISE
+*.vscode*

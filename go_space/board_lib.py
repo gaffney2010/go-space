@@ -87,7 +87,7 @@ class MalformedJsonError(Exception):
 BwBoardStr = Dict[str, List[str]]
 
 def boardFromBwBoardStr(bw: BwBoardStr) -> Board:
-    """Creates a board from a json
+    """Creates a board from a parsed json
 
     Arguments:
         bw: A dict with keys being "black" and "white" and values being lists of

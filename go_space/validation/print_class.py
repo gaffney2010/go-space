@@ -5,7 +5,7 @@ import os
 
 import argparse
 
-import board
+from go_space import board_lib
 import consts
 
 
@@ -27,6 +27,6 @@ if __name__ == "__main__":
 
     all_boards = json.loads(raw_json)
     for b in all_boards["boards"]:
-        print(board.boardFromBwBoardStr(b).ascii_board())
+        print(board_lib.boardFromBwBoardStr(b).ascii_board())
         print()
         print()
