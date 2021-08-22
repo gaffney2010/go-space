@@ -30,3 +30,6 @@ class BoardTest(unittest.TestCase):
         self.assertEqual(
             board_lib.boardFromBwBoardStr(brd).ascii_board(), ("#O.\n" "...\n" "#..")
         )
+
+    def test_bad_test(self):
+        self.assertTrue(False)
