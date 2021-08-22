@@ -88,7 +88,6 @@ def _get_data_from_sgf(sgf: str) -> Iterator[Datum]:
     for pt, player in loop_game(sgf):        
         if _triggering_move(pt):
             yield Datum(board=board.copy(), next_pt=pt)
-
         board.place(pt, player)
 
 
@@ -121,14 +120,21 @@ def translate_files(src_dir, tgt_dir):
     current_batch = list()
     batch_num = 0
 
-    for file in os.glob(os.path.join(src_dir, "*.sgf")):
+    for file in glob.glob(os.path.join(src_dir, "*.sgf")):
         for datum in _get_data_from_sgf(read_game(file)):
             current_batch.append(datum.to_dict())
             if len(current_batch) >= BATCH_SIZE:
                 # Dump
-                with open(f"{batch_num}.pickle", "wb") as f:
+                landfill = os.path.join(tgt_dir, f"{batch_num}.pickle")
+                with open(landfill, "wb") as f:
                     pickle.dump(current_batch, f)
                 current_batch = list()
                 batch_num += 1
     # Forget the rest of the data.
+
+
+# translate_files(
+#     src_dir=os.path.join(consts.TOP_LEVEL_PATH, "data", "_data"),
+#     tgt_dir=os.path.join(consts.TOP_LEVEL_PATH, "data", "_processed_data"),
+# )
 
