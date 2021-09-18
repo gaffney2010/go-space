@@ -96,6 +96,14 @@ class Player(enum.Enum):
     Spec2 = 4
 
 
+def other_player(player: Player) -> Player:
+    if player == Player.Black:
+        return Player.White
+    if player == Player.White:
+        return Player.Black
+    raise FormatError
+
+
 @attr.s(frozen=True)
 class Stone(object):
     point: Point = attr.ib()

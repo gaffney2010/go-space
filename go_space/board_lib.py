@@ -2,7 +2,7 @@
 representing either a tsumego problem or a game at a point in time."""
 
 import copy
-from typing import FrozenSet, Iterator, Dict, List, Optional
+from typing import Iterator, Dict, List, Optional, Set
 
 from go_space import consts
 from go_space.types import *
@@ -15,18 +15,44 @@ def all_points() -> Iterator[Point]:
             yield Point(row=i, col=j)
 
 
+def _adj_points(point: Point) -> Iterator[Point]:
+    for drow, dcol in ((0, 1), (0, -1), (1, 0), (-1, 0)):
+        row, col = point.row + drow, point.col + dcol
+        if 0 <= row < consts.SIZE and 0 <= col < consts.SIZE:
+            yield Point(row, col)
+
+
 class GoError(Exception):
     """Errors relating to the way that go is played."""
 
     pass
 
 
-@attr.s(frozen=True)
+class Action(enum.Enum):
+    ACK = 1
+    # Should remove this chonk now, it's dead.
+    KILL = 2
+
+
 class Chonk(object):
     """Contains a set of contiguous stones"""
-    player: Player = attr.ib()
-    points: FrozenSet[Point] = attr.ib()
-    liberties: FrozenSet[Point] = attr.ib()
+    def __init__(self, player: Optional[Player], points: Set[Point], liberties: Set[Point]):
+        self.player = player
+        self.points = set()
+        self.liberties = set()
+        self._hash = 0
+        if player == Player.Black:
+            self._hash = 1
+
+        for pt in points:
+            self.add_point(pt)
+        for pt in liberties:
+            self.add_liberty(pt)
+
+    @staticmethod
+    def hash_point(point: Point) -> int:
+        num = point.row * consts.SIZE + point.col
+        return hash(num)
 
     def to_dict(self) -> Dict:
         return {
@@ -35,21 +61,49 @@ class Chonk(object):
             "liberties": (p.to_dict() for p in self.liberties)
         }
 
+    def __bool__(self):
+        return self.player is not None
+
+    def __hash__(self):
+        return self._hash
+
     @staticmethod
     def from_dict(self, data: Dict) -> "Chonk":
         return Chonk(
             player=Player(data["player"]),
-            points=frozenset((Point.from_dict(p) for p in data["points"])),
-            liberties=frozenset((Point.from_dict(p) for p in data["liberties"])),
+            points={Point.from_dict(p) for p in data["points"]},
+            liberties={Point.from_dict(p) for p in data["liberties"]},
         )
+
+    def add_liberty(self, point: Point) -> None:
+        self.liberties.add(point)
+        self._hash ^= 2 * self.hash_point(point)
+    
+    def remove_liberty(self, point: Point) -> Action:
+        self.liberties.remove(point)
+        self._hash ^= 2 * self.hash_point(point)
+        if len(self.liberties) == 0:
+            return Action.KILL
+        return Action.ACK
+
+    def add_point(self, point: Point) -> None:
+        self.points.add(point)
+        self._hash ^= 4 * self.hash_point(point)
+
+    def remove_point(self, point: Point) -> None:
+        self.points.remove(point)
+        self._hash ^= 4 * self.hash_point(point)
+
+
+NULL_CHUNK = Chonk(player=None, points=set(), liberties=set())
 
 
 class Board(object):
     def __init__(self):
-        self._grid: Dict[Point, Optional[Player]] = dict()
+        self._grid: Dict[Point, Optional[Chonk]] = dict()
         for point in all_points():
             # No pieces placed yet
-            self._grid[point] = None
+            self._grid[point] = NULL_CHUNK
 
     def to_dict(self) -> Dict:
         """Should contain all the info needed to reconstruct."""
@@ -86,16 +140,56 @@ class Board(object):
     def place(self, point: Point, player: Player) -> None:
         if point not in self._grid:
             raise GoError("Tried to place out of bounds")
-        if self._grid[point] is not None:
+        if self._grid[point].player:
             raise GoError("Tried to put piece on piece")
 
-        self._grid[point] = player
+        my_chonks = set()
+        their_chonks = set()
+        liberties = set()
+        for pt in _adj_points(point):
+            if self._grid[pt].player == player:
+                my_chonks.add(self._grid[pt])
+            elif self._grid[pt].player == other_player(player):
+                their_chonks.add(self._grid[pt])
+            elif self._grid[pt].player is None:
+                liberties.add(pt)
+            else:
+                raise FormatError
+        new_chonk = Chonk(player=player, points={point}, liberties=liberties)
+        my_chonks.add(new_chonk)
+
+        # Reduce liberties of opponent.
+        for chonk in their_chonks:
+            if chonk.remove_liberty(point) == Action.KILL:
+                # First remove the stones
+                for pt in chonk.points:
+                    self._grid[pt] = NULL_CHUNK
+                # Then check if any chonks need a new liberty
+                for pt in chonk.points:
+                    adj_chonks = set()
+                    for adj_pt in _adj_points(pt):
+                        if adj_chonk := self._grid[adj_pt]:
+                            adj_chonks.add(adj_chonk)
+                    for chonk in adj_chonks:
+                        chonk.add_liberty(pt)
+        
+        # Combine chonks
+        combined_points = set()
+        combined_liberties = set()
+        for chonk in my_chonks:
+            combined_points |= chonk.points
+            combined_liberties |= chonk.liberties
+        if point in combined_liberties:
+            combined_liberties.remove(point)
+        combined_chonk = Chonk(player=player, points=combined_points, liberties=combined_liberties)
+        for pt in combined_points:
+            self._grid[pt] = combined_chonk
 
     def stones(self) -> Iterator[Stone]:
         """Loop through all stones."""
-        for point, player in self._grid.items():
-            if player is not None:
-                yield Stone(point=point, player=player)
+        for point, chonk in self._grid.items():
+            if chonk.player:
+                yield Stone(point=point, player=chonk.player)
 
     def ascii_board(self) -> str:
         """Returns ASCII art for board"""
@@ -113,7 +207,7 @@ class Board(object):
         for r in range(consts.SIZE):
             row = list()
             for c in range(consts.SIZE):
-                piece = self._grid[Point(row=r, col=c)]
+                piece = self._grid[Point(row=r, col=c)].player
                 row.append(stone_char(piece))
             result_rows.append("".join(row))
         return "\n".join(result_rows)
