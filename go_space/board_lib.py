@@ -2,7 +2,7 @@
 representing either a tsumego problem or a game at a point in time."""
 
 import copy
-from typing import Iterator, Dict, List, Optional
+from typing import FrozenSet, Iterator, Dict, List, Optional
 
 from go_space import consts
 from go_space.types import *
@@ -21,6 +21,29 @@ class GoError(Exception):
     pass
 
 
+@attr.s(frozen=True)
+class Chonk(object):
+    """Contains a set of contiguous stones"""
+    player: Player = attr.ib()
+    points: FrozenSet[Point] = attr.ib()
+    liberties: FrozenSet[Point] = attr.ib()
+
+    def to_dict(self) -> Dict:
+        return {
+            "player": self.player.value,
+            "points": (p.to_dict() for p in self.points),
+            "liberties": (p.to_dict() for p in self.liberties)
+        }
+
+    @staticmethod
+    def from_dict(self, data: Dict) -> "Chonk":
+        return Chonk(
+            player=Player(data["player"]),
+            points=frozenset((Point.from_dict(p) for p in data["points"])),
+            liberties=frozenset((Point.from_dict(p) for p in data["liberties"])),
+        )
+
+
 class Board(object):
     def __init__(self):
         self._grid: Dict[Point, Optional[Player]] = dict()
@@ -30,13 +53,30 @@ class Board(object):
 
     def to_dict(self) -> Dict:
         """Should contain all the info needed to reconstruct."""
-        return {"grid": copy.deepcopy(self._grid)}
+        # Because many points will point to the same chonk, we try to not repeat
+        result = dict()
+        result["chonks"] = list()
+        result["grid"] = dict()
+
+        chonk_dict = dict()
+        chonk_id = 0
+        # Index for result["chonks"] gets stored to point in "grid"
+        for point, chonk in self._grid.items():
+            if chonk not in chonk_dict:
+                chonk_dict[chonk] = chonk_id; chonk_id += 1
+                result["chonks"].append(chonk.to_dict())
+            result["grid"][point.to_dict()] = chonk_dict[chonk]
+
+        return result
 
     @staticmethod
     def from_dict(data: Dict) -> "Board":
         """Rebuild from one of the to_dict saved dicts."""
+        # First build all the chonks
+        chonks = [Chonk.from_dict(ch) for ch in data["chonks"]]
+
         result = Board()
-        result._grid = data["grid"]
+        result._grid = {k: chonks[v] for k, v in data["grid"].items()}
         return result
 
     def copy(self) -> "Board":

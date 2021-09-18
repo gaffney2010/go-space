@@ -1,5 +1,5 @@
 import enum
-from typing import Dict, Tuple
+from typing import Dict, Iterator, Tuple
 
 import attr
 
@@ -20,14 +20,26 @@ class Point(object):
     row: int = attr.ib()  # Zero-indexed
     col: int = attr.ib()  # Zero-indexed
 
-    def to_dict(self) -> Dict:
+    # TODO: Change name of to/from_dict everywhere.
+    # Despite being called `to_dict`, we prefer a tuple cast, since the object is immutable.
+    def to_dict(self) -> Tuple[int]:
         """Should contain all the info needed to reconstruct."""
-        return {"row": self.row, "col": self.col}
+        return (self.row, self.col)
 
     @staticmethod
-    def from_dict(data: Dict) -> "Point":
+    def from_dict(data: Tuple[int]) -> "Point":
         """Rebuild from one of the to_dict saved dicts."""
-        return Point(**data)
+        return Point(row=data[0], col=data[1])
+
+    def neighbors(self) -> Iterator["Point"]:
+        if self.row - 1 >= 0:
+            yield Point(row=self.row-1, col=self.col)
+        if self.row + 1 < consts.SIZE:
+            yield Point(row=self.row+1, col=self.col)
+        if self.col - 1 >= 0:
+            yield Point(row=self.row, col=self.col-1)
+        if self.col + 1 < consts.SIZE:
+            yield Point(row=self.row, col=self.col+1)
 
     def mod_row_col(self) -> Tuple[int, int]:
         """Gives coordinates after rotating to get point in low-index quarter."""
