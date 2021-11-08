@@ -57,8 +57,8 @@ class Chonk(object):
         assert(self.__bool__())
         return {
             "player": self.player.value,
-            "points": (p.to_dict() for p in self.points),
-            "liberties": (p.to_dict() for p in self.liberties)
+            "points": [p.to_dict() for p in self.points],
+            "liberties": [p.to_dict() for p in self.liberties]
         }
 
     def __bool__(self):
