@@ -180,6 +180,18 @@ class Board(object):
                 raise FormatError
         new_chonk = Chonk(player=player, points={point}, liberties=liberties)
         my_chonks.add(new_chonk)
+        
+        # Combine chonks
+        combined_points = set()
+        combined_liberties = set()
+        for chonk in my_chonks:
+            combined_points |= chonk.points
+            combined_liberties |= chonk.liberties
+        if point in combined_liberties:
+            combined_liberties.remove(point)
+        combined_chonk = Chonk(player=player, points=combined_points, liberties=combined_liberties)
+        for pt in combined_points:
+            self._grid[pt] = combined_chonk
 
         # Reduce liberties of opponent.
         for chonk in their_chonks:
@@ -195,18 +207,6 @@ class Board(object):
                             adj_chonks.add(adj_chonk)
                     for chonk in adj_chonks:
                         chonk.add_liberty(pt)
-        
-        # Combine chonks
-        combined_points = set()
-        combined_liberties = set()
-        for chonk in my_chonks:
-            combined_points |= chonk.points
-            combined_liberties |= chonk.liberties
-        if point in combined_liberties:
-            combined_liberties.remove(point)
-        combined_chonk = Chonk(player=player, points=combined_points, liberties=combined_liberties)
-        for pt in combined_points:
-            self._grid[pt] = combined_chonk
 
     def stones(self) -> Iterator[Stone]:
         """Loop through all stones."""
