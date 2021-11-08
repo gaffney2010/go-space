@@ -1,7 +1,6 @@
 """Contains the Board class which is a board filled in with pieces,
 representing either a tsumego problem or a game at a point in time."""
 
-import copy
 from typing import Iterator, Dict, List, Optional, Set
 
 from go_space import consts
@@ -55,6 +54,7 @@ class Chonk(object):
         return hash(num)
 
     def to_dict(self) -> Dict:
+        assert(self.__bool__())
         return {
             "player": self.player.value,
             "points": (p.to_dict() for p in self.points),
@@ -68,7 +68,7 @@ class Chonk(object):
         return self._hash
 
     @staticmethod
-    def from_dict(self, data: Dict) -> "Chonk":
+    def from_dict(data: Dict) -> "Chonk":
         return Chonk(
             player=Player(data["player"]),
             points={Point.from_dict(p) for p in data["points"]},
@@ -98,9 +98,28 @@ class Chonk(object):
 NULL_CHUNK = Chonk(player=None, points=set(), liberties=set())
 
 
-class Board(object):
+class Grid(object):
     def __init__(self):
         self._grid: Dict[Point, Optional[Chonk]] = dict()
+
+    def __setitem__(self, key: Point, value: Optional[Chonk]) -> None:
+        assert(isinstance(key, Point))
+        self._grid[key] = value
+
+    def __getitem__(self, key: Point) -> Optional[Chonk]:
+        return self._grid[key]
+
+    def __contains__(self, key: Point) -> bool:
+        return key in self._grid
+
+    def items(self) -> Iterator[Tuple[Point, Optional[Chonk]]]:
+        for k, v in self._grid.items():
+            yield k, v
+
+
+class Board(object):
+    def __init__(self):
+        self._grid = Grid()
         for point in all_points():
             # No pieces placed yet
             self._grid[point] = NULL_CHUNK
@@ -116,6 +135,9 @@ class Board(object):
         chonk_id = 0
         # Index for result["chonks"] gets stored to point in "grid"
         for point, chonk in self._grid.items():
+            if not chonk:
+                # This is still NULL_CHUNK
+                continue
             if chonk not in chonk_dict:
                 chonk_dict[chonk] = chonk_id; chonk_id += 1
                 result["chonks"].append(chonk.to_dict())
@@ -130,7 +152,8 @@ class Board(object):
         chonks = [Chonk.from_dict(ch) for ch in data["chonks"]]
 
         result = Board()
-        result._grid = {k: chonks[v] for k, v in data["grid"].items()}
+        for k, v in data["grid"].items():
+            result._grid[Point.from_dict(k)] = chonks[v]
         return result
 
     def copy(self) -> "Board":

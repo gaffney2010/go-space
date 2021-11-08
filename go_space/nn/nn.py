@@ -88,6 +88,8 @@ def _get_data_from_sgf(sgf: str) -> Iterator[Datum]:
     for pt, player in loop_game(sgf):        
         if _triggering_move(pt):
             yield Datum(board=board.copy(), next_pt=pt)
+        print(board.ascii_board())
+        print(pt)
         board.place(pt, player)
 
 
@@ -133,8 +135,8 @@ def translate_files(src_dir, tgt_dir):
     # Forget the rest of the data.
 
 
-# translate_files(
-#     src_dir=os.path.join(consts.TOP_LEVEL_PATH, "data", "_data"),
-#     tgt_dir=os.path.join(consts.TOP_LEVEL_PATH, "data", "_processed_data"),
-# )
+translate_files(
+    src_dir=os.path.join(consts.TOP_LEVEL_PATH, "data", "_data"),
+    tgt_dir=os.path.join(consts.TOP_LEVEL_PATH, "data", "_processed_data"),
+)
 
