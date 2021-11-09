@@ -7,13 +7,6 @@ from go_space import consts
 from go_space.types import *
 
 
-def all_points() -> Iterator[Point]:
-    """Loops through all the points on the board."""
-    for i in range(consts.SIZE):
-        for j in range(consts.SIZE):
-            yield Point(row=i, col=j)
-
-
 def _adj_points(point: Point) -> Iterator[Point]:
     for drow, dcol in ((0, 1), (0, -1), (1, 0), (-1, 0)):
         row, col = point.row + drow, point.col + dcol
@@ -27,102 +20,9 @@ class GoError(Exception):
     pass
 
 
-class Action(enum.Enum):
-    ACK = 1
-    # Should remove this chonk now, it's dead.
-    KILL = 2
-
-
-class Chonk(object):
-    """Contains a set of contiguous stones"""
-    def __init__(self, player: Optional[Player], points: Set[Point], liberties: Set[Point]):
-        self.player = player
-        self.points = set()
-        self.liberties = set()
-        self._hash = 0
-        if player == Player.Black:
-            self._hash = 1
-
-        for pt in points:
-            self.add_point(pt)
-        for pt in liberties:
-            self.add_liberty(pt)
-
-    @staticmethod
-    def hash_point(point: Point) -> int:
-        num = point.row * consts.SIZE + point.col
-        return hash(num)
-
-    def to_dict(self) -> Dict:
-        assert(self.__bool__())
-        return {
-            "player": self.player.value,
-            "points": [p.to_dict() for p in self.points],
-            "liberties": [p.to_dict() for p in self.liberties]
-        }
-
-    def __bool__(self):
-        return self.player is not None
-
-    def __hash__(self):
-        return self._hash
-
-    @staticmethod
-    def from_dict(data: Dict) -> "Chonk":
-        return Chonk(
-            player=Player(data["player"]),
-            points={Point.from_dict(p) for p in data["points"]},
-            liberties={Point.from_dict(p) for p in data["liberties"]},
-        )
-
-    def add_liberty(self, point: Point) -> None:
-        self.liberties.add(point)
-        self._hash ^= 2 * self.hash_point(point)
-    
-    def remove_liberty(self, point: Point) -> Action:
-        self.liberties.remove(point)
-        self._hash ^= 2 * self.hash_point(point)
-        if len(self.liberties) == 0:
-            return Action.KILL
-        return Action.ACK
-
-    def add_point(self, point: Point) -> None:
-        self.points.add(point)
-        self._hash ^= 4 * self.hash_point(point)
-
-    def remove_point(self, point: Point) -> None:
-        self.points.remove(point)
-        self._hash ^= 4 * self.hash_point(point)
-
-
-NULL_CHUNK = Chonk(player=None, points=set(), liberties=set())
-
-
-class Grid(object):
-    def __init__(self):
-        self._grid: Dict[Point, Optional[Chonk]] = dict()
-
-    def __setitem__(self, key: Point, value: Optional[Chonk]) -> None:
-        assert(isinstance(key, Point))
-        self._grid[key] = value
-
-    def __getitem__(self, key: Point) -> Optional[Chonk]:
-        return self._grid[key]
-
-    def __contains__(self, key: Point) -> bool:
-        return key in self._grid
-
-    def items(self) -> Iterator[Tuple[Point, Optional[Chonk]]]:
-        for k, v in self._grid.items():
-            yield k, v
-
-
 class Board(object):
     def __init__(self):
         self._grid = Grid()
-        for point in all_points():
-            # No pieces placed yet
-            self._grid[point] = NULL_CHUNK
 
     def to_dict(self) -> Dict:
         """Should contain all the info needed to reconstruct."""

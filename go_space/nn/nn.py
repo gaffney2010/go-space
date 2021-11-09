@@ -11,9 +11,6 @@
 # xxxx.....
 # .........
 
-# !!!!!!!!!!!!!!!!!!!!!
-# T.J. - processed data doesn't do what's described above.  Instead it saves the entire board.  Pls fix, ty.
-
 import glob
 import os
 import pickle
@@ -60,15 +57,54 @@ def loop_game(sgf: str) -> Iterator[Tuple[Point, Player]]:
         yield pt, player
 
 
-@attr.s
 class Datum(object):
-    board: board_lib.Board = attr.ib()
-    next_pt: Point = attr.ib()
+    def __init__(self, grid: Grid, next_pt: Point):
+        self.grid = grid
+        self.next_pt = next_pt
+        self.grid.mask(self._iterator_corner())
+
+    def _iterator_corner(self) -> Iterator[Point]:
+        """Sweeps through
+        
+        # xxxxxxxx.
+        # xxxxxxxx.
+        # xxxxxxxx.
+        # xxxxxxxx.
+        # xxxxxx...
+        # xxxxx....
+        # xxxx.....
+        # xxxx.....
+        # .........
+
+        in the corner as next_pt
+        """
+        half_board = consts.SIZE // 2 + 1
+        r, c = self.next_pt.row, self.next_pt.col
+
+        x, y, dx, dy = 0, 0, 1, 1
+        if r > half_board:
+            y, dy = consts.SIZE - 1, -1
+        if c > half_board:
+            x, dx = consts.SIZE - 1, -1
+
+        offsets = (
+            [(0, i) for i in range(8)] +
+            [(1, i) for i in range(8)] +
+            [(2, i) for i in range(8)] +
+            [(3, i) for i in range(8)] +
+            [(4, i) for i in range(6)] +
+            [(5, i) for i in range(5)] +
+            [(6, i) for i in range(4)] +
+            [(7, i) for i in range(4)]
+        )
+
+        for a, b in offsets:
+            yield Point(row=x+a*dx, col=y+b*dy)
 
     def to_dict(self) -> Dict:
         """Should contain all the info needed to reconstruct."""
         result = dict()
-        result["board"] = self.board.to_dict()
+        result["grid"] = self.grid.to_sparse()
         result["next_pt"] = self.next_pt.to_dict()
         return result
 
@@ -90,7 +126,7 @@ def _get_data_from_sgf(sgf: str) -> Iterator[Datum]:
     board = board_lib.Board()
     for pt, player in loop_game(sgf):        
         if _triggering_move(pt):
-            yield Datum(board=board.copy(), next_pt=pt)
+            yield Datum(grid=board._grid.copy(), next_pt=pt)
         board.place(pt, player)
 
 
@@ -136,6 +172,7 @@ def translate_files(src_dir, tgt_dir):
             current_batch.append(datum.to_dict())
             if len(current_batch) >= BATCH_SIZE:
                 # Dump
+                print(f"Working on pickle dump #{batch_num}")
                 landfill = os.path.join(tgt_dir, f"{batch_num}.pickle")
                 with open(landfill, "wb") as f:
                     pickle.dump(current_batch, f)
