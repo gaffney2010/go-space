@@ -11,6 +11,9 @@
 # xxxx.....
 # .........
 
+# !!!!!!!!!!!!!!!!!!!!!
+# T.J. - processed data doesn't do what's described above.  Instead it saves the entire board.  Pls fix, ty.
+
 import glob
 import os
 import pickle
@@ -120,8 +123,16 @@ def translate_files(src_dir, tgt_dir):
     current_batch = list()
     batch_num = 0
 
+    # !!!!!!!!!!!!!!!!!!!!!
+    # T.J. this breaks around pickle 86 for a single board.  We should try to understand this.
+    # When a board breaks, save it to a file as a special case.
+
     for file in glob.glob(os.path.join(src_dir, "*.sgf")):
         for datum in _get_data_from_sgf(read_game(file)):
+            if batch_num >= 1000:
+                # To avoid blowing up my hard drive
+                assert(False)
+
             current_batch.append(datum.to_dict())
             if len(current_batch) >= BATCH_SIZE:
                 # Dump
@@ -130,7 +141,6 @@ def translate_files(src_dir, tgt_dir):
                     pickle.dump(current_batch, f)
                 current_batch = list()
                 batch_num += 1
-    # Forget the rest of the data.
 
 
 translate_files(
