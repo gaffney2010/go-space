@@ -10,9 +10,7 @@ import consts
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Prints all the boards in a class."
-    )
+    parser = argparse.ArgumentParser(description="Prints all the boards in a class.")
     parser.add_argument(
         "name", type=str, help="Filename without .json (e.g. make-eyes)"
     )

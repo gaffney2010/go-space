@@ -30,6 +30,7 @@ def make_random_embedding(dim: int) -> Embedding:
 def dumb_embedding(brd: board.Board) -> np.ndarray:
     """Simple encoding of boards, probably won't be good."""
     half_board = consts.SIZE // 2 + 1
+
     def _embed_ind(stone: board.Stone):
         player = stone.player
         row, col = stone.point.mod_row_col()
@@ -37,10 +38,10 @@ def dumb_embedding(brd: board.Board) -> np.ndarray:
         # Only record up to symmetry
         ind = col * half_board + row
         if player == board.Player.Black:
-            ind += (half_board ** 2)
+            ind += half_board ** 2
 
-    result = np.zeros( 2 * (half_board**2) )
+    result = np.zeros(2 * (half_board ** 2))
     for stone in brd.stones():
         result[_embed_ind(stone)] += 1
-    
-    return result        
+
+    return result

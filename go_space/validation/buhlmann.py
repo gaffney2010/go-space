@@ -4,7 +4,7 @@ Embeddings are score with Buhlmann credibility.  A smaller number is better."""
 
 import json
 import os
-from typing import Callable, List
+from typing import List
 
 import attr
 import numpy as np
@@ -44,7 +44,7 @@ def buhlmannCredibility(moments: List[Moments]):
     epv = np.average([m.var for m in moments])
     vhm = _momentsFromPoints([m.mean for m in moments]).var
 
-    return epv/vhm
+    return epv / vhm
 
 
 def computeBuhlmannOnClasses(embedding: Embedding):

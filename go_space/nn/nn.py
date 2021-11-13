@@ -35,11 +35,11 @@ def point_player_from_sgf(move_str: str) -> Tuple[Point, Player]:
     move_str = move_str.strip()
     if len(move_str) != 5:
         raise SgfFormatError
-    
-    if move_str[0] == 'B':
+
+    if move_str[0] == "B":
         # TODO: Consider moving some of these types.
         player = Player.Black
-    elif move_str[0] == 'W':
+    elif move_str[0] == "W":
         player = Player.White
     else:
         raise SgfFormatError
@@ -65,7 +65,7 @@ class Datum(object):
 
     def _iterator_corner(self) -> Iterator[Point]:
         """Sweeps through
-        
+
         # xxxxxxxx.
         # xxxxxxxx.
         # xxxxxxxx.
@@ -88,18 +88,18 @@ class Datum(object):
             x, dx = consts.SIZE - 1, -1
 
         offsets = (
-            [(0, i) for i in range(8)] +
-            [(1, i) for i in range(8)] +
-            [(2, i) for i in range(8)] +
-            [(3, i) for i in range(8)] +
-            [(4, i) for i in range(6)] +
-            [(5, i) for i in range(5)] +
-            [(6, i) for i in range(4)] +
-            [(7, i) for i in range(4)]
+            [(0, i) for i in range(8)]
+            + [(1, i) for i in range(8)]
+            + [(2, i) for i in range(8)]
+            + [(3, i) for i in range(8)]
+            + [(4, i) for i in range(6)]
+            + [(5, i) for i in range(5)]
+            + [(6, i) for i in range(4)]
+            + [(7, i) for i in range(4)]
         )
 
         for a, b in offsets:
-            yield Point(row=x+a*dx, col=y+b*dy)
+            yield Point(row=x + a * dx, col=y + b * dy)
 
     def to_dict(self) -> Dict:
         """Should contain all the info needed to reconstruct."""
@@ -124,7 +124,7 @@ def _triggering_move(point: Point) -> bool:
 
 def _get_data_from_sgf(sgf: str) -> Iterator[Datum]:
     board = board_lib.Board()
-    for pt, player in loop_game(sgf):        
+    for pt, player in loop_game(sgf):
         if _triggering_move(pt):
             yield Datum(grid=board._grid.copy(), next_pt=pt)
         board.place(pt, player)
@@ -136,9 +136,7 @@ def _animate_board(sgf: str) -> None:
         os.system("clear")
         print(f"Move {i}")
         to_draw = board.copy()
-        to_draw._grid[pt] = (
-            Player.Spec1 if _triggering_move(pt) else Player.Spec2
-        )
+        to_draw._grid[pt] = Player.Spec1 if _triggering_move(pt) else Player.Spec2
         print(to_draw.ascii_board())
         board.place(pt, player)
         time.sleep(3)
@@ -167,7 +165,7 @@ def translate_files(src_dir, tgt_dir):
         for datum in _get_data_from_sgf(read_game(file)):
             if batch_num >= 1000:
                 # To avoid blowing up my hard drive
-                assert(False)
+                assert False
 
             current_batch.append(datum.to_dict())
             if len(current_batch) >= BATCH_SIZE:
@@ -184,4 +182,3 @@ translate_files(
     src_dir=os.path.join(consts.TOP_LEVEL_PATH, "data", "_data"),
     tgt_dir=os.path.join(consts.TOP_LEVEL_PATH, "data", "_processed_data"),
 )
-
