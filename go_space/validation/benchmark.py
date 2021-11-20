@@ -2,7 +2,7 @@
 
 import numpy as np
 
-from go_space import board, embeddings
+from go_space import embeddings
 from go_space.validation import buhlmann
 
 

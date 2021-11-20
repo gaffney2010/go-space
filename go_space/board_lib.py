@@ -3,14 +3,15 @@ representing either a tsumego problem or a game at a point in time."""
 
 from typing import Iterator, Dict, List, Optional
 
-from go_space import consts, exceptions, types
+from go_space import consts, exceptions
+from go_space.go_types import chonk_lib, action_lib, grid_lib, player_lib, point_lib, stone_lib
 
 
-def _adj_points(point: types.Point) -> Iterator[types.Point]:
+def _adj_points(point: point_lib.Point) -> Iterator[point_lib.Point]:
     for drow, dcol in ((0, 1), (0, -1), (1, 0), (-1, 0)):
         row, col = point.row + drow, point.col + dcol
         if 0 <= row < consts.SIZE and 0 <= col < consts.SIZE:
-            yield types.Point(row, col)
+            yield point_lib.Point(row, col)
 
 
 class GoError(Exception):
@@ -19,17 +20,17 @@ class GoError(Exception):
     pass
 
 
-def _other_player(player: types.Player) -> types.Player:
-    if player == player.Player.Black:
-        return player.Player.White
-    if player == player.Player.White:
-        return player.Player.Black
+def _other_player(player: player_lib.Player) -> player_lib.Player:
+    if player == player_lib.Player.Black:
+        return player_lib.Player.White
+    if player == player_lib.Player.White:
+        return player_lib.Player.Black
     raise exceptions.FormatError
 
 
 class Board(object):
     def __init__(self):
-        self._grid = types.Grid()
+        self._grid = grid_lib.Grid()
 
     def to_dict(self) -> Dict:
         """Should contain all the info needed to reconstruct."""
@@ -57,18 +58,18 @@ class Board(object):
     def from_dict(data: Dict) -> "Board":
         """Rebuild from one of the to_dict saved dicts."""
         # First build all the chonks
-        chonks = [types.Chonk.from_dict(ch) for ch in data["chonks"]]
+        chonks = [chonk.Chonk.from_dict(ch) for ch in data["chonks"]]
 
         result = Board()
         for k, v in data["grid"].items():
-            result._grid[types.Point.from_dict(k)] = chonks[v]
+            result._grid[point_lib.Point.from_dict(k)] = chonks[v]
         return result
 
     def copy(self) -> "Board":
         """Deep copies"""
         return Board.from_dict(self.to_dict())
 
-    def place(self, point: types.Point, player: types.Player) -> None:
+    def place(self, point: point_lib.Point, player: player_lib.Player) -> None:
         if point not in self._grid:
             raise GoError("Tried to place out of bounds")
         if self._grid[point].player:
@@ -86,7 +87,7 @@ class Board(object):
                 liberties.add(pt)
             else:
                 raise exceptions.FormatError
-        new_chonk = types.Chonk(player=player, points={point}, liberties=liberties)
+        new_chonk = chonk_lib.Chonk(player=player, points={point}, liberties=liberties)
         my_chonks.add(new_chonk)
 
         # Combine chonks
@@ -97,7 +98,7 @@ class Board(object):
             combined_liberties |= chonk.liberties
         if point in combined_liberties:
             combined_liberties.remove(point)
-        combined_chonk = types.Chonk(
+        combined_chonk = chonk_lib.Chonk(
             player=player, points=combined_points, liberties=combined_liberties
         )
         for pt in combined_points:
@@ -105,10 +106,10 @@ class Board(object):
 
         # Reduce liberties of opponent.
         for chonk in their_chonks:
-            if chonk.remove_liberty(point) == types.Action.KILL:
+            if chonk.remove_liberty(point) == action_lib.Action.KILL:
                 # First remove the stones
                 for pt in chonk.points:
-                    self._grid[pt] = types.NULL_CHUNK
+                    self._grid[pt] = chonk_lib.NULL_CHUNK
                 # Then check if any chonks need a new liberty
                 for pt in chonk.points:
                     adj_chonks = set()
@@ -118,21 +119,21 @@ class Board(object):
                     for chonk in adj_chonks:
                         chonk.add_liberty(pt)
 
-    def stones(self) -> Iterator[Stone]:
+    def stones(self) -> Iterator[stone_lib.Stone]:
         """Loop through all stones."""
         for point, chonk in self._grid.items():
             if chonk.player:
-                yield types.Stone(point=point, player=chonk.player)
+                yield stone_lib.Stone(point=point, player=chonk.player)
 
     def ascii_board(self) -> str:
         """Returns ASCII art for board"""
 
-        def stone_char(stone: Optional[types.Player]) -> str:
+        def stone_char(stone: Optional[player_lib.Player]) -> str:
             STONE_CHAR = {
-                types.Player.Black: "#",
-                types.Player.White: "O",
-                types.Player.Spec1: "?",
-                types.Player.Spec2: "!",
+                player_lib.Player.Black: "#",
+                player_lib.Player.White: "O",
+                player_lib.Player.Spec1: "?",
+                player_lib.Player.Spec2: "!",
             }
             BLANK_CHAR = "."
             return STONE_CHAR.get(stone, BLANK_CHAR)
@@ -141,7 +142,7 @@ class Board(object):
         for r in range(consts.SIZE):
             row = list()
             for c in range(consts.SIZE):
-                piece = self._grid[Point(row=r, col=c)].player
+                piece = self._grid[point_lib.Point(row=r, col=c)].player
                 row.append(stone_char(piece))
             result_rows.append("".join(row))
         return "\n".join(result_rows)
@@ -180,8 +181,8 @@ def boardFromBwBoardStr(bw: BwBoardStr) -> Board:
     result = Board()
 
     for point_str in bw["black"]:
-        result.place(point=types.Point.fromLabel(point_str), player=types.Player.Black)
+        result.place(point=point_lib.Point.fromLabel(point_str), player=player_lib.Player.Black)
     for point_str in bw["white"]:
-        result.place(point=types.Point.fromLabel(point_str), player=types.Player.White)
+        result.place(point=point_lib.Point.fromLabel(point_str), player=player_lib.Player.White)
 
     return result
