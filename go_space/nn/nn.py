@@ -10,6 +10,9 @@
 # xxxx.....
 # xxxx.....
 # .........
+#
+# Expand this to an 11x11 before saving.  This is so that the CNN doesn't think
+# the non-edges are edges.
 
 import glob
 import os
@@ -17,16 +20,17 @@ import pickle
 import time
 from typing import Dict, Iterator, Tuple
 
-import attr
 import chardet
 
-from go_space import board_lib, consts
-from go_space.types import *
+from go_space import board_lib, consts, exceptions
+from go_space.go_types import *
 
 _SAMPLE_FILE = "1514127723010001630.sgf"
 
+_DATA_SIZE = 11
 
-class SgfFormatError(FormatError):
+
+class SgfFormatError(exceptions.FormatError):
     pass
 
 
@@ -51,7 +55,7 @@ def loop_game(sgf: str) -> Iterator[Tuple[Point, Player]]:
     for move_str in sgf.split(";"):
         try:
             pt, player = point_player_from_sgf(move_str[:5])
-        except FormatError:
+        except exceptions.FormatError:
             # Doesn't represent a move
             continue
         yield pt, player
@@ -59,9 +63,21 @@ def loop_game(sgf: str) -> Iterator[Tuple[Point, Player]]:
 
 class Datum(object):
     def __init__(self, grid: Grid, next_pt: Point):
-        self.grid = grid
         self.next_pt = next_pt
+        self.grid = grid.copy()
+        self.grid.rotate(self._flip_x(), self._flip_y())
         self.grid.mask(self._iterator_corner())
+        self.grid.resize(_DATA_SIZE)
+
+    def _flip_x(self) -> bool:
+        half_board = consts.SIZE // 2 + 1
+        c = self.next_pt.col
+        return c > half_board
+
+    def _flip_y(self) -> bool:
+        half_board = consts.SIZE // 2 + 1
+        r = self.next_pt.row
+        return r > half_board
 
     def _iterator_corner(self) -> Iterator[Point]:
         """Sweeps through
@@ -78,14 +94,7 @@ class Datum(object):
 
         in the corner as next_pt
         """
-        half_board = consts.SIZE // 2 + 1
-        r, c = self.next_pt.row, self.next_pt.col
-
         x, y, dx, dy = 0, 0, 1, 1
-        if r > half_board:
-            y, dy = consts.SIZE - 1, -1
-        if c > half_board:
-            x, dx = consts.SIZE - 1, -1
 
         offsets = (
             [(0, i) for i in range(8)]
