@@ -34,6 +34,8 @@ class SgfFormatError(exceptions.FormatError):
     pass
 
 
+# TODO: Delete a bunch of unused to_dict/from_dict functions.
+
 def point_player_from_sgf(move_str: str) -> Tuple[Point, Player]:
     """Expect sgf_string to be like 'B[aa]'."""
     move_str = move_str.strip()
@@ -126,7 +128,9 @@ class Datum(object):
         )
 
 
-def _triggering_move(point: Point) -> bool:
+def _triggering_move(point: Point, player: Player) -> bool:
+    if player == Player.White:
+        return False
     r, c = point.mod_row_col()
     return r < 4 and c < 4
 
@@ -160,6 +164,8 @@ def read_game(fn):
 # _animate_board(read_game(os.path.join(consts.TOP_LEVEL_PATH, "data", "_data", _SAMPLE_FILE)))
 
 
+# TODO: Just save 40k points total, single file.
+# TODO: Save test/train target/features
 def translate_files(src_dir, tgt_dir):
     BATCH_SIZE = 1000
 
@@ -167,7 +173,6 @@ def translate_files(src_dir, tgt_dir):
     batch_num = 0
 
     # !!!!!!!!!!!!!!!!!!!!!
-    # T.J. this breaks around pickle 86 for a single board.  We should try to understand this.
     # When a board breaks, save it to a file as a special case.
 
     for file in glob.glob(os.path.join(src_dir, "*.sgf")):
