@@ -2,25 +2,24 @@ import json
 import unittest
 import unittest.mock
 
-from go_space import board_lib
-from go_space.go_types import *
+from go_space import board_lib, go_types
 
 
 class BoardTest(unittest.TestCase):
     @unittest.mock.patch("go_space.consts.SIZE", 3)
     def test_sgf_format(self):
         board = board_lib.Board()
-        board.place(Point.fromLabel("aa"), Player.Black)
-        board.place(Point.fromLabel("ba"), Player.White)
-        board.place(Point.fromLabel("ac"), Player.Black)
+        board.place(go_types.Point.fromLabel("aa"), go_types.Player.Black)
+        board.place(go_types.Point.fromLabel("ba"), go_types.Player.White)
+        board.place(go_types.Point.fromLabel("ac"), go_types.Player.Black)
         self.assertEqual(board.ascii_board(), ("#O.\n" "...\n" "#.."))
 
     @unittest.mock.patch("go_space.consts.SIZE", 3)
     def test_a1_format(self):
         board = board_lib.Board()
-        board.place(Point.fromLabel("A3"), Player.Black)
-        board.place(Point.fromLabel("B3"), Player.White)
-        board.place(Point.fromLabel("A1"), Player.Black)
+        board.place(go_types.Point.fromLabel("A3"), go_types.Player.Black)
+        board.place(go_types.Point.fromLabel("B3"), go_types.Player.White)
+        board.place(go_types.Point.fromLabel("A1"), go_types.Player.Black)
         self.assertEqual(board.ascii_board(), ("#O.\n" "...\n" "#.."))
 
     @unittest.mock.patch("go_space.consts.SIZE", 3)
@@ -33,11 +32,11 @@ class BoardTest(unittest.TestCase):
 
     def test_remove_stones(self):
         board = board_lib.Board()
-        board.place(point=Point(row=1, col=1), player=Player.White)
-        board.place(point=Point(row=0, col=1), player=Player.Black)
-        board.place(point=Point(row=2, col=1), player=Player.Black)
-        board.place(point=Point(row=1, col=0), player=Player.Black)
-        board.place(point=Point(row=1, col=2), player=Player.Black)
+        board.place(point=go_types.Point(row=1, col=1), player=go_types.Player.White)
+        board.place(point=go_types.Point(row=0, col=1), player=go_types.Player.Black)
+        board.place(point=go_types.Point(row=2, col=1), player=go_types.Player.Black)
+        board.place(point=go_types.Point(row=1, col=0), player=go_types.Player.Black)
+        board.place(point=go_types.Point(row=1, col=2), player=go_types.Player.Black)
         self.assertEqual(
             board.ascii_board(),
             """.#.................
@@ -65,9 +64,9 @@ class BoardTest(unittest.TestCase):
 
     def test_remove_stones_corner(self):
         board = board_lib.Board()
-        board.place(point=Point(row=0, col=0), player=Player.White)
-        board.place(point=Point(row=1, col=0), player=Player.Black)
-        board.place(point=Point(row=0, col=1), player=Player.Black)
+        board.place(point=go_types.Point(row=0, col=0), player=go_types.Player.White)
+        board.place(point=go_types.Point(row=1, col=0), player=go_types.Player.Black)
+        board.place(point=go_types.Point(row=0, col=1), player=go_types.Player.Black)
         self.assertEqual(
             board.ascii_board(),
             """.#.................
@@ -95,17 +94,17 @@ class BoardTest(unittest.TestCase):
 
     def test_remove_stones_blob(self):
         board = board_lib.Board()
-        board.place(point=Point(row=1, col=1), player=Player.White)
-        board.place(point=Point(row=1, col=2), player=Player.White)
-        board.place(point=Point(row=2, col=2), player=Player.White)
-        board.place(point=Point(row=0, col=1), player=Player.Black)
-        board.place(point=Point(row=0, col=2), player=Player.Black)
-        board.place(point=Point(row=0, col=3), player=Player.Black)
-        board.place(point=Point(row=1, col=0), player=Player.Black)
-        board.place(point=Point(row=1, col=3), player=Player.Black)
-        board.place(point=Point(row=2, col=1), player=Player.Black)
-        board.place(point=Point(row=2, col=3), player=Player.Black)
-        board.place(point=Point(row=3, col=2), player=Player.Black)
+        board.place(point=go_types.Point(row=1, col=1), player=go_types.Player.White)
+        board.place(point=go_types.Point(row=1, col=2), player=go_types.Player.White)
+        board.place(point=go_types.Point(row=2, col=2), player=go_types.Player.White)
+        board.place(point=go_types.Point(row=0, col=1), player=go_types.Player.Black)
+        board.place(point=go_types.Point(row=0, col=2), player=go_types.Player.Black)
+        board.place(point=go_types.Point(row=0, col=3), player=go_types.Player.Black)
+        board.place(point=go_types.Point(row=1, col=0), player=go_types.Player.Black)
+        board.place(point=go_types.Point(row=1, col=3), player=go_types.Player.Black)
+        board.place(point=go_types.Point(row=2, col=1), player=go_types.Player.Black)
+        board.place(point=go_types.Point(row=2, col=3), player=go_types.Player.Black)
+        board.place(point=go_types.Point(row=3, col=2), player=go_types.Player.Black)
         self.assertEqual(
             board.ascii_board(),
             """.###...............

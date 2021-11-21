@@ -1,7 +1,5 @@
 """Computes Buhlmann credibility on some informationless embeddings."""
 
-import numpy as np
-
 from go_space import embeddings
 from go_space.validation import buhlmann
 

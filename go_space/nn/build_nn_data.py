@@ -17,13 +17,11 @@
 import glob
 from go_space.nn.data_manager import DataManager
 import os
-import pickle
 from typing import Iterator, Tuple
 
 import chardet
 
-from go_space import board_lib, consts, exceptions
-from go_space.go_types import *
+from go_space import board_lib, consts, exceptions, go_types
 
 from .datum_lib import Datum
 
@@ -44,8 +42,8 @@ def read_game(fn):
     return bites.decode(encoding=chardet.detect(bites)["encoding"])
 
 
-def _triggering_move(point: Point, player: Player) -> bool:
-    if player == Player.White:
+def _triggering_move(point: go_types.Point, player: go_types.Player) -> bool:
+    if player == go_types.Player.White:
         return False
     r, c = point.mod_row_col()
     return r < 4 and c < 4
@@ -59,7 +57,7 @@ def _get_data_from_sgf(sgf: str) -> Iterator[Datum]:
         board.place(pt, player)
 
 
-def point_player_from_sgf(move_str: str) -> Tuple[Point, Player]:
+def point_player_from_sgf(move_str: str) -> Tuple[go_types.Point, go_types.Player]:
     """Expect sgf_string to be like 'B[aa]'."""
     move_str = move_str.strip()
     if len(move_str) != 5:
@@ -67,16 +65,16 @@ def point_player_from_sgf(move_str: str) -> Tuple[Point, Player]:
 
     if move_str[0] == "B":
         # TODO: Consider moving some of these types.
-        player = Player.Black
+        player = go_types.Player.Black
     elif move_str[0] == "W":
-        player = Player.White
+        player = go_types.Player.White
     else:
         raise SgfFormatError
 
-    return Point.fromLabel(move_str[2:4]), player
+    return go_types.Point.fromLabel(move_str[2:4]), player
 
 
-def loop_game(sgf: str) -> Iterator[Tuple[Point, Player]]:
+def loop_game(sgf: str) -> Iterator[Tuple[go_types.Point, go_types.Player]]:
     for move_str in sgf.split(";"):
         try:
             pt, player = point_player_from_sgf(move_str[:5])

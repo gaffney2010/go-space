@@ -3,12 +3,11 @@ from typing import Dict, Iterator
 
 import numpy as np
 
-from go_space import board_lib, consts
-from go_space.go_types import *
+from go_space import board_lib, consts, go_types
 
 
 class Datum(object):
-    def __init__(self, grid: Grid, next_pt: Point):
+    def __init__(self, grid: go_types.Grid, next_pt: go_types.Point):
         self.next_pt = next_pt
         self.grid = grid.copy()
         self.grid.rotate(self._flip_x(), self._flip_y())
@@ -25,7 +24,7 @@ class Datum(object):
         r = self.next_pt.row
         return r > half_board
 
-    def _iterator_corner(self) -> Iterator[Point]:
+    def _iterator_corner(self) -> Iterator[go_types.Point]:
         """Sweeps through
 
         # xxxxxxxx.
@@ -54,7 +53,7 @@ class Datum(object):
         )
 
         for a, b in offsets:
-            yield Point(row=x + a * dx, col=y + b * dy)
+            yield go_types.Point(row=x + a * dx, col=y + b * dy)
 
     def _to_dict(self) -> Dict:
         """Should contain all the info needed to reconstruct."""
@@ -68,7 +67,7 @@ class Datum(object):
         """Rebuild from one of the to_dict saved dicts."""
         return Datum(
             board=board_lib.Board.from_dict(data["board"]),
-            next_pt=Point.from_dict(data["next_pt"]),
+            next_pt=go_types.Point.from_dict(data["next_pt"]),
         )
 
     def to_json(self) -> str:
