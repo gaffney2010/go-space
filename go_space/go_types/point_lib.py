@@ -22,16 +22,6 @@ class Point(object):
         """Rebuild from one of the to_dict saved dicts."""
         return Point(row=data[0], col=data[1])
 
-    def neighbors(self) -> Iterator["Point"]:
-        if self.row - 1 >= 0:
-            yield Point(row=self.row - 1, col=self.col)
-        if self.row + 1 < consts.SIZE:
-            yield Point(row=self.row + 1, col=self.col)
-        if self.col - 1 >= 0:
-            yield Point(row=self.row, col=self.col - 1)
-        if self.col + 1 < consts.SIZE:
-            yield Point(row=self.row, col=self.col + 1)
-
     def mod_row_col(self) -> Tuple[int, int]:
         """Gives coordinates after rotating to get point in low-index quarter."""
         half_board = consts.SIZE // 2 + 1

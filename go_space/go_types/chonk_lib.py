@@ -68,9 +68,5 @@ class Chonk(object):
         self.points.add(point)
         self._hash ^= 4 * self.hash_point(point)
 
-    def remove_point(self, point: point_lib.Point) -> None:
-        self.points.remove(point)
-        self._hash ^= 4 * self.hash_point(point)
-
 
 NULL_CHUNK = Chonk(player=None, points=set(), liberties=set())

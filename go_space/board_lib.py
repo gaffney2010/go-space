@@ -180,8 +180,12 @@ def boardFromBwBoardStr(bw: BwBoardStr) -> Board:
     result = Board()
 
     for point_str in bw["black"]:
-        result.place(point=go_types.Point.fromLabel(point_str), player=go_types.Player.Black)
+        result.place(
+            point=go_types.Point.fromLabel(point_str), player=go_types.Player.Black
+        )
     for point_str in bw["white"]:
-        result.place(point=go_types.Point.fromLabel(point_str), player=go_types.Player.White)
+        result.place(
+            point=go_types.Point.fromLabel(point_str), player=go_types.Player.White
+        )
 
     return result

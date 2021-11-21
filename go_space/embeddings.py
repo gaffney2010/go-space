@@ -40,6 +40,8 @@ def dumb_embedding(brd: board.Board) -> np.ndarray:
         if player == board.Player.Black:
             ind += half_board ** 2
 
+        return ind
+
     result = np.zeros(2 * (half_board ** 2))
     for stone in brd.stones():
         result[_embed_ind(stone)] += 1

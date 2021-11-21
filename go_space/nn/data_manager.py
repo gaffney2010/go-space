@@ -135,7 +135,9 @@ class DataManager(object):
         if self.page_cursor == -1 or self.entry_cursor == PAGE_SIZE:
             self._turn_page()
 
-        with open(os.path.join(self.data_path, str(self.page_cursor) + ".txt"), "a") as f:
+        with open(
+            os.path.join(self.data_path, str(self.page_cursor) + ".txt"), "a"
+        ) as f:
             f.write(datum.to_json() + "\n")
         self.entry_cursor += 1
 
