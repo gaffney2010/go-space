@@ -33,9 +33,6 @@ class SgfFormatError(exceptions.FormatError):
     pass
 
 
-# TODO: Delete a bunch of unused to_dict/from_dict functions.
-
-
 def read_game(fn):
     with open(fn, "rb") as f:
         bites = f.read()
@@ -86,7 +83,6 @@ def loop_game(sgf: str) -> Iterator[Tuple[go_types.Point, go_types.Player]]:
 
 NO_DATA_TO_SAVE = 1000
 
-# TODO: Save test/train
 def translate_files(src_dir: Path, tgt_dir: Path) -> None:
     dm = DataManager(tgt_dir)
     batch_num = 0
