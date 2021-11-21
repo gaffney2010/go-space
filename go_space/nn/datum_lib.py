@@ -8,7 +8,8 @@ from go_space import consts, go_types
 
 class Datum(object):
     def __init__(self, grid: go_types.Grid, next_pt: go_types.Point):
-        self.next_pt = next_pt
+        r, c = next_pt.mod_row_col()
+        self.next_pt = go_types.Point(r, c)
         self.grid = grid.copy()
         self.grid.rotate(self._flip_x(), self._flip_y())
         self.grid.mask(self._iterator_corner())

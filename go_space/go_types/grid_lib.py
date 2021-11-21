@@ -3,6 +3,7 @@ from typing import Dict, Iterator, List, Optional, Tuple
 from go_space import consts
 
 from . import chonk_lib, player_lib, point_lib
+from go_space import go_types
 
 
 def _all_points(size: int) -> Iterator[point_lib.Point]:
@@ -79,7 +80,8 @@ class Grid(object):
         result["sparse_grid"] = list()
         for point in _all_points(self.size):
             if chonk := self.__getitem__(point):
-                result["sparse_grid"].append((point, chonk.player))
+                result["sparse_grid"].append((point.to_dict(), chonk.player.value))
+        return result
 
     def copy(self) -> "Grid":
         """Deep copy."""
@@ -91,5 +93,5 @@ class Grid(object):
     def from_dict(data_dict: Dict) -> "Grid":
         result = Grid(data_dict["size"])
         for player, point in data_dict["sparse_grid"]:
-            result[player] = point
+            result[go_types.Player(player)] = go_types.Point.from_dict(point)
         return result

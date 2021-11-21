@@ -90,13 +90,11 @@ def translate_files(src_dir: Path, tgt_dir: Path) -> None:
     for file in glob.glob(os.path.join(src_dir, "*.sgf")):
         for datum in _get_data_from_sgf(read_game(file)):
             if batch_num >= NO_DATA_TO_SAVE:
-                break
+                return
 
             dm.save_datum(datum)
 
             batch_num += 1
-
-    dm.train_test_split(0.1)
 
 
 translate_files(
