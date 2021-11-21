@@ -7,8 +7,9 @@ import random
 from typing import Iterator, List, Tuple
 
 import attr
+import glob
 
-from go_space import consts, exceptions
+from go_space import exceptions
 
 from .datum_lib import Datum
 
@@ -34,9 +35,7 @@ class Page(object):
 
 # TODO: Clean up
 class DataManager(object):
-    data_path = os.path.join(consts.TOP_LEVEL_PATH, "data", "_processed_data")
-
-    def __init__(self):
+    def __init__(self, tgt_dir):
         self.page_cursor = -1
         self.entry_cursor = 0
         self.test_pages = set()
@@ -46,6 +45,19 @@ class DataManager(object):
         self._read_pages = set()
         self._on_page = -1
         self._read_cursor = 0
+
+        self.data_path = tgt_dir
+
+        self._note_existing_pages()
+
+    def _note_existing_pages(self) -> None:
+        # Assumes files are written 1, 2, ..., n
+        num_files = len(glob.glob(os.path.join(self.data_path, "*.txt")))
+
+        self.page_cursor = num_files
+        self.entry_cursor = 0
+        if os.path.exists(os.path.join(self.data_path, self.page_cursor + ".txt")):
+            self.entry_cursor = len(self._read_page(self.page_cursor))
 
     def _turn_page(self) -> None:
         self.page_cursor += 1
@@ -64,7 +76,7 @@ class DataManager(object):
 
         # Read with an LRU cache
         page_data = list()
-        with open(os.path.join(self.data_path, page_num), 'r') as f:
+        with open(os.path.join(self.data_path, page_num + ".txt"), 'r') as f:
             for line in f.readlines():
                 page_data.append(Datum.from_json(line))
         page = Page(page_num=page_num, content=page_data)
@@ -120,7 +132,7 @@ class DataManager(object):
         if self.page_cursor == -1 or self.entry_cursor == PAGE_SIZE:
             self._turn_page()
 
-        with open(os.path.join(self.data_path, self.page_cursor), 'a') as f:
+        with open(os.path.join(self.data_path, self.page_cursor + ".txt"), 'a') as f:
             f.write(datum.to_json() + "\n")
         self.entry_cursor += 1
 

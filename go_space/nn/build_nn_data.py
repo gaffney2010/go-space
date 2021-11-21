@@ -15,6 +15,7 @@
 # the non-edges are edges.
 
 import glob
+from go_space.nn.data_manager import DataManager
 import os
 import pickle
 from typing import Iterator, Tuple
@@ -86,30 +87,22 @@ def loop_game(sgf: str) -> Iterator[Tuple[Point, Player]]:
 
 NO_DATA_TO_SAVE = 1000
 
-# TODO: Just save 20k points total, single file.
 # TODO: Save test/train
 def translate_files(src_dir: Path, tgt_dir: Path) -> None:
-    current_batch = list()
+    dm = DataManager(tgt_dir)
     batch_num = 0
 
-    # !!!!!!!!!!!!!!!!!!!!!
-    # When a board breaks, save it to a file as a special case.
-
+    # TODO: When a board breaks, save it to a file as a special case.
     for file in glob.glob(os.path.join(src_dir, "*.sgf")):
         for datum in _get_data_from_sgf(read_game(file)):
-            if batch_num >= 1000:
-                # To avoid blowing up my hard drive
-                assert False
+            if batch_num >= NO_DATA_TO_SAVE:
+                break
 
-            current_batch.append(datum.to_dict())
-            if len(current_batch) >= BATCH_SIZE:
-                # Dump
-                print(f"Working on pickle dump #{batch_num}")
-                landfill = os.path.join(tgt_dir, f"{batch_num}.pickle")
-                with open(landfill, "wb") as f:
-                    pickle.dump(current_batch, f)
-                current_batch = list()
-                batch_num += 1
+            dm.save_datum()
+
+            batch_num += 1
+    
+    dm.train_test_split(0.1)
 
 
 translate_files(
