@@ -1,6 +1,7 @@
 from typing import Dict, Optional, Set
 
 from go_space import consts
+
 from . import action_lib, player_lib, point_lib
 
 

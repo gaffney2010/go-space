@@ -15,15 +15,13 @@
 # the non-edges are edges.
 
 import glob
-from go_space.nn.data_manager import DataManager
 import os
 from typing import Iterator, Tuple
 
 import chardet
 
 from go_space import board_lib, consts, exceptions, go_types
-
-from .datum_lib import Datum
+from go_space.nn import data_manager, datum_lib
 
 
 Path = str
@@ -46,11 +44,11 @@ def _triggering_move(point: go_types.Point, player: go_types.Player) -> bool:
     return r < 4 and c < 4
 
 
-def _get_data_from_sgf(sgf: str) -> Iterator[Datum]:
+def _get_data_from_sgf(sgf: str) -> Iterator[datum_lib.Datum]:
     board = board_lib.Board()
     for pt, player in loop_game(sgf):
-        if _triggering_move(pt):
-            yield Datum(grid=board._grid.copy(), next_pt=pt)
+        if _triggering_move(pt, player):
+            yield datum_lib.Datum(grid=board._grid.copy(), next_pt=pt)
         board.place(pt, player)
 
 
@@ -84,7 +82,7 @@ def loop_game(sgf: str) -> Iterator[Tuple[go_types.Point, go_types.Player]]:
 NO_DATA_TO_SAVE = 1000
 
 def translate_files(src_dir: Path, tgt_dir: Path) -> None:
-    dm = DataManager(tgt_dir)
+    dm = data_manager.DataManager(tgt_dir)
     batch_num = 0
 
     # TODO: When a board breaks, save it to a file as a special case.
@@ -93,7 +91,7 @@ def translate_files(src_dir: Path, tgt_dir: Path) -> None:
             if batch_num >= NO_DATA_TO_SAVE:
                 break
 
-            dm.save_datum()
+            dm.save_datum(datum)
 
             batch_num += 1
 

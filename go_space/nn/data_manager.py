@@ -11,12 +11,12 @@ import glob
 
 from go_space import exceptions
 
-from .datum_lib import Datum
+from . import datum_lib
 
 
 # TODO: Maybe these should be the same?
-Batch = List[Datum]
-Data = List[Datum]
+Batch = List[datum_lib.Datum]
+Data = List[datum_lib.Datum]
 
 PAGE_SIZE = 100
 PAGES_IN_MEMORY = 10
@@ -56,7 +56,7 @@ class DataManager(object):
 
         self.page_cursor = num_files
         self.entry_cursor = 0
-        if os.path.exists(os.path.join(self.data_path, self.page_cursor + ".txt")):
+        if os.path.exists(os.path.join(self.data_path, str(self.page_cursor) + ".txt")):
             self.entry_cursor = len(self._read_page(self.page_cursor))
 
     def _turn_page(self) -> None:
@@ -76,15 +76,15 @@ class DataManager(object):
 
         # Read with an LRU cache
         page_data = list()
-        with open(os.path.join(self.data_path, page_num + ".txt"), "r") as f:
+        with open(os.path.join(self.data_path, str(page_num) + ".txt"), "r") as f:
             for line in f.readlines():
-                page_data.append(Datum.from_json(line))
+                page_data.append(datum_lib.Datum.from_json(line))
         page = Page(page_num=page_num, content=page_data)
         self._page_cache = [page] + self._page_cache
         self._page_cache = self._page_cache[:PAGES_IN_MEMORY]
         return page
 
-    def _read_entry(self, page_num: int, entry_num: int) -> Datum:
+    def _read_entry(self, page_num: int, entry_num: int) -> datum_lib.Datum:
         page = self._read_page(page_num)
         if entry_num > len(page):
             raise exceptions.DataException(
@@ -131,11 +131,11 @@ class DataManager(object):
     def size(self) -> int:
         return (self.page_cursor - 1) * PAGE_SIZE + self.entry_cursor
 
-    def save_datum(self, datum: Datum) -> None:
+    def save_datum(self, datum: datum_lib.Datum) -> None:
         if self.page_cursor == -1 or self.entry_cursor == PAGE_SIZE:
             self._turn_page()
 
-        with open(os.path.join(self.data_path, self.page_cursor + ".txt"), "a") as f:
+        with open(os.path.join(self.data_path, str(self.page_cursor) + ".txt"), "a") as f:
             f.write(datum.to_json() + "\n")
         self.entry_cursor += 1
 

@@ -1,6 +1,7 @@
 from typing import Dict, Iterator, List, Optional, Tuple
 
 from go_space import consts
+
 from . import chonk_lib, player_lib, point_lib
 
 
@@ -74,7 +75,7 @@ class Grid(object):
 
     def to_sparse(self) -> List[Tuple[point_lib.Point, player_lib.Player]]:
         result = list()
-        for point in _all_points():
+        for point in _all_points(self.size):
             if chonk := self.__getitem__(point):
                 result.append((point, chonk.player))
 
