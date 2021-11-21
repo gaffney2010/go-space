@@ -23,7 +23,9 @@ class Grid(object):
         self._grid: Dict[point_lib.Point, Optional[chonk_lib.Chonk]] = dict()
         self._clear()
 
-    def __setitem__(self, key: point_lib.Point, value: Optional[chonk_lib.Chonk]) -> None:
+    def __setitem__(
+        self, key: point_lib.Point, value: Optional[chonk_lib.Chonk]
+    ) -> None:
         assert isinstance(key, point_lib.Point)
         self._grid[key] = value
 
@@ -47,7 +49,7 @@ class Grid(object):
         for i in range(self.size):
             for j in range(self.size):
                 to_point = point_lib.Point(i, j)
-                from_point = point_lib.Point(x + i*dx, y + j*dy)
+                from_point = point_lib.Point(x + i * dx, y + j * dy)
                 self[to_point] = grid_copy[from_point]
 
     def mask(self, points: Iterator[point_lib.Point]) -> None:

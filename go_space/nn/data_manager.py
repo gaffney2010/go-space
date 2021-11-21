@@ -76,7 +76,7 @@ class DataManager(object):
 
         # Read with an LRU cache
         page_data = list()
-        with open(os.path.join(self.data_path, page_num + ".txt"), 'r') as f:
+        with open(os.path.join(self.data_path, page_num + ".txt"), "r") as f:
             for line in f.readlines():
                 page_data.append(Datum.from_json(line))
         page = Page(page_num=page_num, content=page_data)
@@ -87,7 +87,9 @@ class DataManager(object):
     def _read_entry(self, page_num: int, entry_num: int) -> Datum:
         page = self._read_page(page_num)
         if entry_num > len(page):
-            raise exceptions.DataException(f"Trying to read entry {entry_num} off of page {page_num}, but entries only go to {len(page)}.")
+            raise exceptions.DataException(
+                f"Trying to read entry {entry_num} off of page {page_num}, but entries only go to {len(page)}."
+            )
         return page[entry_num]
 
     def _choose_next(self, data_split: TrainTest) -> Tuple[int, int]:
@@ -102,6 +104,7 @@ class DataManager(object):
 
             def already_read(try_page: Page) -> bool:
                 return try_page in self.test_pages
+
             def wrong_data(try_page: Page) -> bool:
                 nonlocal data_split
                 if data_split == TrainTest.TRAIN:
@@ -132,7 +135,7 @@ class DataManager(object):
         if self.page_cursor == -1 or self.entry_cursor == PAGE_SIZE:
             self._turn_page()
 
-        with open(os.path.join(self.data_path, self.page_cursor + ".txt"), 'a') as f:
+        with open(os.path.join(self.data_path, self.page_cursor + ".txt"), "a") as f:
             f.write(datum.to_json() + "\n")
         self.entry_cursor += 1
 
@@ -147,7 +150,9 @@ class DataManager(object):
         for page in random.sample(range(self.page_cursor), num_test_pages):
             self.test_pages.add(page)
 
-    def get_batch(self, batch_size: int, data_split: TrainTest, replace: bool = True) -> Batch:
+    def get_batch(
+        self, batch_size: int, data_split: TrainTest, replace: bool = True
+    ) -> Batch:
         # Should be semi-random.
         if self.page_cursor == -1:
             raise exceptions.DataException("No data saved.")

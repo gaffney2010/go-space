@@ -30,6 +30,7 @@ from .datum_lib import Datum
 
 Path = str
 
+
 class SgfFormatError(exceptions.FormatError):
     pass
 
@@ -101,7 +102,7 @@ def translate_files(src_dir: Path, tgt_dir: Path) -> None:
             dm.save_datum()
 
             batch_num += 1
-    
+
     dm.train_test_split(0.1)
 
 
