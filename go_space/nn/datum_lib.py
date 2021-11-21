@@ -3,7 +3,7 @@ from typing import Dict, Iterator
 
 import numpy as np
 
-from go_space import board_lib, consts, go_types
+from go_space import consts, go_types
 
 
 class Datum(object):
@@ -58,7 +58,7 @@ class Datum(object):
     def _to_dict(self) -> Dict:
         """Should contain all the info needed to reconstruct."""
         result = dict()
-        result["grid"] = self.grid.to_sparse()
+        result["grid"] = self.grid.to_dict()
         result["next_pt"] = self.next_pt.to_dict()
         return result
 
@@ -66,7 +66,7 @@ class Datum(object):
     def _from_dict(data) -> "Datum":
         """Rebuild from one of the to_dict saved dicts."""
         return Datum(
-            board=board_lib.Board.from_dict(data["board"]),
+            grid=go_types.Grid.from_dict(data["board"]),
             next_pt=go_types.Point.from_dict(data["next_pt"]),
         )
 

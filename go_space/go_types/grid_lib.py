@@ -73,11 +73,13 @@ class Grid(object):
         for k, v in self._grid.items():
             yield k, v
 
-    def to_sparse(self) -> List[Tuple[point_lib.Point, player_lib.Player]]:
-        result = list()
+    def to_dict(self) -> Dict:
+        result = dict()
+        result["size"] = self.size
+        result["sparse_grid"] = list()
         for point in _all_points(self.size):
             if chonk := self.__getitem__(point):
-                result.append((point, chonk.player))
+                result["sparse_grid"].append((point, chonk.player))
 
     def copy(self) -> "Grid":
         """Deep copy."""
@@ -86,9 +88,8 @@ class Grid(object):
         return result
 
     @staticmethod
-    def from_sparse(sparse: List[Tuple[point_lib.Point, player_lib.Player]]) -> "Grid":
-        # TODO: Account for size
-        result = Grid()
-        for player, point in sparse:
+    def from_dict(data_dict: Dict) -> "Grid":
+        result = Grid(data_dict["size"])
+        for player, point in data_dict["sparse_grid"]:
             result[player] = point
         return result
