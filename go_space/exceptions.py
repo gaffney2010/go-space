@@ -4,3 +4,7 @@ class FormatError(Exception):
 
 class PointFormatError(FormatError):
     pass
+
+
+class DataException(Exception):
+    pass
