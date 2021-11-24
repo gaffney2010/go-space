@@ -79,7 +79,7 @@ def loop_game(sgf: str) -> Iterator[Tuple[go_types.Point, go_types.Player]]:
         yield pt, player
 
 
-NO_DATA_TO_SAVE = 1000
+NO_DATA_TO_SAVE = 20000
 
 
 def translate_files(src_dir: Path, tgt_dir: Path) -> None:

@@ -8,22 +8,24 @@ from go_space import consts, go_types
 
 class Datum(object):
     def __init__(self, grid: go_types.Grid, next_pt: go_types.Point):
-        r, c = next_pt.mod_row_col()
-        self.next_pt = go_types.Point(r, c)
+        self.next_pt = next_pt
         self.grid = grid.copy()
         self.grid.rotate(self._flip_x(), self._flip_y())
+        # Rotate pt also:
+        r, c = next_pt.mod_row_col()
+        self.next_pt = go_types.Point(r, c)
         self.grid.mask(self._iterator_corner())
         self.grid.resize(consts.DATA_BOARD_SIZE)
 
     def _flip_x(self) -> bool:
         half_board = consts.SIZE // 2 + 1
-        c = self.next_pt.col
-        return c > half_board
+        r = self.next_pt.row
+        return r > half_board
 
     def _flip_y(self) -> bool:
         half_board = consts.SIZE // 2 + 1
-        r = self.next_pt.row
-        return r > half_board
+        c = self.next_pt.col
+        return c > half_board
 
     def _iterator_corner(self) -> Iterator[go_types.Point]:
         """Sweeps through

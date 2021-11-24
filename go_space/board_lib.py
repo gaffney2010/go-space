@@ -126,25 +126,7 @@ class Board(object):
 
     def ascii_board(self) -> str:
         """Returns ASCII art for board"""
-
-        def stone_char(stone: Optional[go_types.Player]) -> str:
-            STONE_CHAR = {
-                go_types.Player.Black: "#",
-                go_types.Player.White: "O",
-                go_types.Player.Spec1: "?",
-                go_types.Player.Spec2: "!",
-            }
-            BLANK_CHAR = "."
-            return STONE_CHAR.get(stone, BLANK_CHAR)
-
-        result_rows = list()
-        for r in range(consts.SIZE):
-            row = list()
-            for c in range(consts.SIZE):
-                piece = self._grid[go_types.Point(row=r, col=c)].player
-                row.append(stone_char(piece))
-            result_rows.append("".join(row))
-        return "\n".join(result_rows)
+        return self._grid.ascii_board()
 
 
 class MalformedJsonError(Exception):
