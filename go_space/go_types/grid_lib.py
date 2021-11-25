@@ -74,15 +74,6 @@ class Grid(object):
         for k, v in self._grid.items():
             yield k, v
 
-    def to_dict(self) -> Dict:
-        result = dict()
-        result["size"] = self.size
-        result["sparse_grid"] = list()
-        for point in _all_points(self.size):
-            if chonk := self.__getitem__(point):
-                result["sparse_grid"].append((point.to_dict(), chonk.player.value))
-        return result
-
     def copy(self) -> "Grid":
         """Deep copy."""
         result = Grid(size=self.size)
@@ -111,9 +102,23 @@ class Grid(object):
             result_rows.append("".join(row))
         return "\n".join(result_rows)
 
+    def to_dict(self) -> Dict:
+        result = dict()
+        result["size"] = self.size
+        result["sparse_grid"] = list()
+        for point in _all_points(self.size):
+            if chonk := self.__getitem__(point):
+                result["sparse_grid"].append((point.to_dict(), chonk.player.value))
+        return result
+
     @staticmethod
     def from_dict(data_dict: Dict) -> "Grid":
+        # TODO: Mark this grid as unusuable, or refactor clever-like
+        # Create a signal chonk for all stones of a color.  This won't be a working grid.
+        black_stones = go_types.Chonk(go_types.Player.Black, {}, {})
+        white_stones = go_types.Chonk(go_types.Player.White, {}, {})
+
         result = Grid(data_dict["size"])
-        for player, point in data_dict["sparse_grid"]:
-            result[go_types.Player(player)] = go_types.Point.from_dict(point)
+        for point, player in data_dict["sparse_grid"]:
+            result[go_types.Point.from_dict(point)] = (black_stones if player == go_types.Player.Black else white_stones)
         return result

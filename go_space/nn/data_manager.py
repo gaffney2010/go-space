@@ -4,21 +4,21 @@ import enum
 import math
 import os
 import random
-from typing import Iterator, List, Tuple
+from typing import Any, Iterator, List, Tuple
 
 import attr
 import glob
+import numpy as np
 
 from go_space import exceptions
 
 from . import datum_lib
 
 
-# TODO: Maybe these should be the same?
-Batch = List[datum_lib.Datum]
+Batch = Any  # List[np.ndarray, np.ndarray]
 Data = List[datum_lib.Datum]
 
-PAGE_SIZE = 100
+PAGE_SIZE = 200
 PAGES_IN_MEMORY = 10
 
 
@@ -32,21 +32,23 @@ class Page(object):
     page_num: int = attr.ib()
     content: Data = attr.ib()
 
+    def __len__(self) -> int:
+        return len(self.content)
+
 
 # TODO: Clean up
 class DataManager(object):
     def __init__(self, tgt_dir):
+        # TODO: Rename cursors to be include "write"
         self.page_cursor = -1
         self.entry_cursor = 0
         self.test_pages = set()
         self._page_cache = list()
 
-        # Used in the course of generating batches
-        self._read_pages = set()
-        self._on_page = -1
-        self._read_cursor = 0
-
         self.data_path = tgt_dir
+
+        # Used in the course of generating batches
+        self.reset()
 
         self._note_existing_pages()
 
@@ -59,15 +61,9 @@ class DataManager(object):
         if os.path.exists(os.path.join(self.data_path, str(self.page_cursor) + ".txt")):
             self.entry_cursor = len(self._read_page(self.page_cursor))
 
-    def _turn_page(self) -> None:
-        self.page_cursor += 1
-        self.entry_cursor = 0
-
     def _read_page(self, page_num: int) -> Page:
         if page_num >= self.page_cursor:
             raise exceptions.DataException(f"Page {page_num} doesn't exist")
-        if page_num == self.page_cursor - 1 and self.entry_cursor == 0:
-            raise exceptions.DataException("DataManager in bad state 1, unexpected.")
 
         # Check cache first
         for page in self._page_cache:
@@ -86,24 +82,28 @@ class DataManager(object):
 
     def _read_entry(self, page_num: int, entry_num: int) -> datum_lib.Datum:
         page = self._read_page(page_num)
-        if entry_num > len(page):
+        if entry_num >= len(page):
             raise exceptions.DataException(
-                f"Trying to read entry {entry_num} off of page {page_num}, but entries only go to {len(page)}."
+                f"Trying to read entry {entry_num} off of page {page_num}, but entries only go to {len(page)-1}."
             )
-        return page[entry_num]
+        return page.content[entry_num]
 
     def _choose_next(self, data_split: TrainTest) -> Tuple[int, int]:
         # Pick a random page, then go through the data on that page in order.  Subject to change, I suppose.
         def choose_new_page() -> int:
             if data_split == TrainTest.TRAIN:
-                if len(self._read_pages | self.test_pages) == self.page_cursor:
+                if len(self._read_train_pages | self.test_pages) == self.page_cursor:
                     raise exceptions.DataException("Tried to read too many pages.")
             if data_split == TrainTest.TEST:
-                if len(self._read_pages) == len(self.test_pages):
+                if len(self._read_test_pages) == len(self.test_pages):
                     raise exceptions.DataException("Tried to read too many pages.")
 
             def already_read(try_page: Page) -> bool:
-                return try_page in self.test_pages
+                nonlocal data_split
+                if data_split == TrainTest.TRAIN:
+                    return try_page in self._read_train_pages
+                if data_split == TrainTest.TEST:
+                    return try_page in self._read_test_pages
 
             def wrong_data(try_page: Page) -> bool:
                 nonlocal data_split
@@ -115,15 +115,22 @@ class DataManager(object):
             try_page = random.randint(0, self.page_cursor - 1)
             while already_read(try_page) or wrong_data(try_page):
                 try_page = random.randint(0, self.page_cursor - 1)
+
+            # Mark as read
+            if data_split == TrainTest.TRAIN:
+                self._read_train_pages.add(try_page)
+            if data_split == TrainTest.TEST:
+                self._read_test_pages.add(try_page)
+
             return try_page
 
         if self._on_page == -1:
             self._on_page = choose_new_page()
             self._read_cursor = 0
-        if self._on_page >= len(self._read_page(self._on_page)):
+        if self._read_cursor >= len(self._read_page(self._on_page)):
             self._on_page = choose_new_page()
             self._read_cursor = 0
-
+        
         result = (self._on_page, self._read_cursor)
         self._read_cursor += 1
         return result
@@ -133,7 +140,8 @@ class DataManager(object):
 
     def save_datum(self, datum: datum_lib.Datum) -> None:
         if self.page_cursor == -1 or self.entry_cursor == PAGE_SIZE:
-            self._turn_page()
+            self.page_cursor += 1
+            self.entry_cursor = 0
 
         with open(
             os.path.join(self.data_path, str(self.page_cursor) + ".txt"), "a"
@@ -153,23 +161,32 @@ class DataManager(object):
             self.test_pages.add(page)
 
     def get_batch(
-        self, batch_size: int, data_split: TrainTest, replace: bool = True
+        self, batch_size: int, data_split: TrainTest, reset: bool = True
     ) -> Batch:
         # Should be semi-random.
         if self.page_cursor == -1:
             raise exceptions.DataException("No data saved.")
 
-        if replace:
-            self._read_pages = set()
-            self._on_page = -1
-            self._read_cursor = 0
+        if reset:
+            self.reset()
 
-        result = list()
+        features, targets = list(), list()
         for _ in range(batch_size):
-            result.append(self._read_entry(*self._choose_next(data_split)))
-        return result
+            next_datum = self._read_entry(*self._choose_next(data_split))
+            features.append(next_datum.np_feature())
+            targets.append(next_datum.np_target())
+        return np.stack(features, axis=0), np.stack(targets, axis=0)
 
-    def loop_epic(self, batch_size: int, data_split: TrainTest) -> Iterator[Batch]:
-        num_batches = self.size() // batch_size
-        for _ in range(num_batches):
-            yield self.get_batch(batch_size, data_split, replace=False)
+    def reset(self) -> None:
+        """Needs to be called between looping batches"""
+        print("RESET")
+        self._read_train_pages = set()
+        self._read_test_pages = set()
+        self._on_page = -1
+        self._read_cursor = 0
+
+    def generate_batches(
+        self, batch_size: int, data_split: TrainTest
+    ) -> Iterator[Batch]:
+        while True:
+            yield self.get_batch(batch_size, data_split, reset=False)

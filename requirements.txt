@@ -1,5 +1,7 @@
 argparse
 attrs
 chardet
+keras
 numpy
 pathlib
+tensorflow

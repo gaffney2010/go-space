@@ -69,7 +69,7 @@ class Datum(object):
     def _from_dict(data) -> "Datum":
         """Rebuild from one of the to_dict saved dicts."""
         return Datum(
-            grid=go_types.Grid.from_dict(data["board"]),
+            grid=go_types.Grid.from_dict(data["grid"]),
             next_pt=go_types.Point.from_dict(data["next_pt"]),
         )
 
@@ -81,7 +81,17 @@ class Datum(object):
         return Datum._from_dict(json.loads(data_str))
 
     def np_feature(self) -> np.ndarray:
-        raise NotImplementedError
+        # Add dimension for single "channel"
+        result = np.zeros([consts.DATA_BOARD_SIZE, consts.DATA_BOARD_SIZE, 1])
+        for r in range(consts.DATA_BOARD_SIZE):
+            for c in range(consts.DATA_BOARD_SIZE):
+                if chonk := self.grid[go_types.Point(row=r, col=c)]:
+                    result[r, c, 0] = 1 if chonk.player == go_types.Player.Black else 0
+        return result
 
     def np_target(self) -> np.ndarray:
-        raise NotImplementedError
+        # TODO: Magic numbers
+        result = [0] * 16
+        r, c = self.next_pt.row, self.next_pt.col
+        result[4*r+c] = 1
+        return result
