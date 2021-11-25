@@ -82,11 +82,10 @@ class Datum(object):
 
     def np_feature(self) -> np.ndarray:
         # Add dimension for single "channel"
-        result = np.zeros([consts.DATA_BOARD_SIZE, consts.DATA_BOARD_SIZE, 1])
-        for r in range(consts.DATA_BOARD_SIZE):
-            for c in range(consts.DATA_BOARD_SIZE):
-                if chonk := self.grid[go_types.Point(row=r, col=c)]:
-                    result[r, c, 0] = 1 if chonk.player == go_types.Player.Black else 0
+        result = [0] * 51
+        for i, point_i in enumerate(self._iterator_corner()):
+            if chonk := self.grid[point_i]:
+                result[i] = 1 if chonk.player == go_types.Player.Black else 0
         return result
 
     def np_target(self) -> np.ndarray:

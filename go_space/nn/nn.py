@@ -11,20 +11,10 @@ from go_space.nn import data_manager
 
 def layers():
     return [
-        ZeroPadding2D(padding=2, data_format='channels_last'),
-        Conv2D(24, (5, 5), data_format='channels_last'),
+        Dense(36),
         Activation('relu'),
 
-        # ZeroPadding2D(padding=2, data_format='channels_last'),
-        # Conv2D(48, (5, 5), data_format='channels_last'),
-        # Activation('relu'),
-
-        ZeroPadding2D(padding=2, data_format='channels_last'),
-        Conv2D(24, (5, 5), data_format='channels_last'),
-        Activation('relu'),
-
-        Flatten(),
-        Dense(64),
+        Dense(24),
         Activation('relu'),
 
         Dense(16, activation='softmax'),
