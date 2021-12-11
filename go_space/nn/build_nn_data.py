@@ -89,15 +89,21 @@ def translate_files(src_dir: Path, tgt_dir: Path) -> None:
     dm = data_manager.DataManager(tgt_dir)
     batch_num = 0
 
-    # TODO: When a board breaks, save it to a file as a special case.
     for file in glob.glob(os.path.join(src_dir, "*.sgf")):
-        for datum in _get_data_from_sgf(read_game(file)):
-            if batch_num >= NO_DATA_TO_SAVE:
-                return
+        try:
+            # Queue because _get_data_from_sgf may fail part way
+            data_queue = list()
 
-            dm.save_datum(datum)
-
-            batch_num += 1
+            for datum in _get_data_from_sgf(read_game(file)):
+                if batch_num >= NO_DATA_TO_SAVE:
+                    return
+                data_queue.append(datum)
+                batch_num += 1
+            
+            for datum in data_queue:
+                dm.save_datum(datum)
+        except:
+            print(f"Failed to parse file: {file}")
 
 
 translate_files(
