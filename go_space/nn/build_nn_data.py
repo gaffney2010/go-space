@@ -40,7 +40,7 @@ def read_game(fn):
 def _triggering_move(datum: datum_lib.Datum, player: go_types.Player) -> bool:
     if player == go_types.Player.White:
         return False
-    r, c = datum.next_pt
+    r, c = datum.next_pt.row, datum.next_pt.col
     # TODO: Magic numbers, bad
     return (r < 4 and c < 4) and datum.data_size() >= 8
 
