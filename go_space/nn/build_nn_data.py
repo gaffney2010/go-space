@@ -37,18 +37,21 @@ def read_game(fn):
     return bites.decode(encoding=chardet.detect(bites)["encoding"])
 
 
-def _triggering_move(point: go_types.Point, player: go_types.Player) -> bool:
+def _triggering_move(datum: datum_lib.Datum, player: go_types.Player) -> bool:
     if player == go_types.Player.White:
         return False
-    r, c = point.mod_row_col()
-    return r < 4 and c < 4
+    r, c = datum.next_pt
+    # TODO: Magic numbers, bad
+    return (r < 4 and c < 4) and datum.data_size() >= 8
 
 
 def _get_data_from_sgf(sgf: str) -> Iterator[datum_lib.Datum]:
+    """Loops through the moves played, yielding the "triggering moves"""
     board = board_lib.Board()
     for pt, player in loop_game(sgf):
-        if _triggering_move(pt, player):
-            yield datum_lib.Datum(grid=board._grid.copy(), next_pt=pt)
+        datum = datum_lib.Datum(grid=board._grid.copy(), next_pt=pt)
+        if _triggering_move(datum, player):
+            yield datum
         board.place(pt, player)
 
 

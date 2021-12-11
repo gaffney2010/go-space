@@ -76,6 +76,13 @@ class Datum(object):
     def to_json(self) -> str:
         return json.dumps(self._to_dict())
 
+    def data_size(self) -> int:
+        result = 0
+        for pt in self._iterator_corner():
+            if self.grid[pt]:
+                result += 1
+        return result
+
     @staticmethod
     def from_json(data_str) -> "Datum":
         return Datum._from_dict(json.loads(data_str))
