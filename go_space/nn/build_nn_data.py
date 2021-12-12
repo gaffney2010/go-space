@@ -27,6 +27,9 @@ from go_space.nn import data_manager, datum_lib
 Path = str
 
 
+# TODO: Explore why 1486308520019999148.sgf is failing on parse.
+
+
 class SgfFormatError(exceptions.FormatError):
     pass
 
