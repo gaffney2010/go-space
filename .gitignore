@@ -11,5 +11,8 @@ local_config.py
 # Don't include data
 go_space/data/_*
 
+# Don't include models
+go_space/saved_models
+
 # VSCODE NOISE
 *.vscode*

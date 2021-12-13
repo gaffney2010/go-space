@@ -49,7 +49,7 @@ BATCH_SIZE = 256
 
 model.fit_generator(
     generator=data_reader.generate_batches(BATCH_SIZE, data_manager.TrainTest.TRAIN),
-    epochs=20,
+    epochs=3,
     # TODO: Fix off-by-a-few error.  It may not actually be there.
     steps_per_epoch=40000 * 0.8 // BATCH_SIZE - 5,
     validation_data=data_reader.generate_batches(128, data_manager.TrainTest.TEST),
@@ -67,3 +67,5 @@ print(model.evaluate_generator(
     generator=data_reader.generate_batches(128, data_manager.TrainTest.TEST),
     steps=40000 * 0.2 // BATCH_SIZE - 5,
 ))
+
+model.save(os.path.join(consts.TOP_LEVEL_PATH, "saved_models", "v1"))
