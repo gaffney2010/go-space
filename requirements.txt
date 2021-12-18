@@ -2,6 +2,10 @@ argparse
 attrs
 chardet
 keras
+matplotlib
 numpy
+pandas
 pathlib
+seaborn
+sklearn
 tensorflow
