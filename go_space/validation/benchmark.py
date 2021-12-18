@@ -5,6 +5,8 @@ from go_space.validation import buhlmann
 
 
 if __name__ == "__main__":
+    nn_embed = embeddings.NNEmbed()
+
     # We found that random scores drop quickly until ~40, then level out.
     for d in range(10, 110, 10):
         print("=================")
@@ -19,5 +21,5 @@ if __name__ == "__main__":
 
     print("==================")
     print("NN embedding:")
-    print(buhlmann.computeBuhlmannOnClasses(embeddings.nn_embedding))
+    print(buhlmann.computeBuhlmannOnClasses(nn_embed.nn_embedding))
     print()

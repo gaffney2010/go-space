@@ -52,18 +52,20 @@ def dumb_embedding(brd: board_lib.Board) -> np.ndarray:
 
     return result
 
-def nn_embedding(brd: board_lib.Board) -> np.ndarray:
-    # TODO: Don't reload with every call.
-    full_model = load_model(os.path.join(consts.TOP_LEVEL_PATH, "saved_models", "v1"))
-    layers = [full_model.get_layer(index=i) for i in range(8)]
-    new_model = Sequential()
-    for layer in layers:
-        new_model.add(layer)
-    
-    # Pick a point in the corner, just so that it won't rotate
-    pt = point_lib.Point(consts.SIZE-1, 0)
-    datum = datum_lib.Datum(grid=brd._grid, next_pt=pt)
-    x = np.stack([datum.np_feature()], axis=0)
 
-    y = new_model.predict(x)
-    return y[0]
+class NNEmbed(object):
+    def __init__(self):
+        full_model = load_model(os.path.join(consts.TOP_LEVEL_PATH, "saved_models", "v1"))
+        layers = [full_model.get_layer(index=i) for i in range(8)]
+        self.new_model = Sequential()
+        for layer in layers:
+            self.new_model.add(layer)
+
+    def nn_embedding(self, brd: board_lib.Board) -> np.ndarray:
+        # Pick a point in the corner, just so that it won't rotate
+        pt = next(brd._grid.sparse_iter())
+        datum = datum_lib.Datum(grid=brd._grid, next_pt=pt)
+        x = np.stack([datum.np_feature()], axis=0)
+
+        y = self.new_model.predict(x)
+        return y[0]

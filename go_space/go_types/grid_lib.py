@@ -102,13 +102,17 @@ class Grid(object):
             result_rows.append("".join(row))
         return "\n".join(result_rows)
 
+    def sparse_iter(self) -> Iterator[point_lib.Point]:
+        for point in _all_points(self.size):
+            if self[point]:
+                yield point
+
     def to_dict(self) -> Dict:
         result = dict()
         result["size"] = self.size
         result["sparse_grid"] = list()
-        for point in _all_points(self.size):
-            if chonk := self.__getitem__(point):
-                result["sparse_grid"].append((point.to_dict(), chonk.player.value))
+        for point in self.sparse_iter():
+            result["sparse_grid"].append((point.to_dict(), self[point].player.value))
         return result
 
     @staticmethod

@@ -9,7 +9,11 @@ from sklearn.manifold import TSNE
 
 from go_space import board_lib, consts, embeddings
 
+
 classes_folder = os.path.join(consts.TOP_LEVEL_PATH, "validation", "classes")
+
+nn_embed = embeddings.NNEmbed()
+embed_func = nn_embed.nn_embedding
 
 X_, y_ = list(), list()
 for file in os.listdir(classes_folder):
@@ -19,7 +23,7 @@ for file in os.listdir(classes_folder):
     clss = json.loads(raw_json)
     for brd in clss["boards"]:
         this_board = board_lib.boardFromBwBoardStr(brd)
-        X_.append(embeddings.nn_embedding(this_board))
+        X_.append(embed_func(this_board))
         y_.append(file.split(".")[0])
 
 
