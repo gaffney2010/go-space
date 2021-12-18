@@ -1,7 +1,9 @@
 """This file contains the Embedding type and some sample embeddings."""
 
+import os
 from typing import Callable
 
+from keras.models import load_model, Sequential
 import numpy as np
 
 from go_space import board, consts
@@ -47,3 +49,15 @@ def dumb_embedding(brd: board.Board) -> np.ndarray:
         result[_embed_ind(stone)] += 1
 
     return result
+
+def nn_embedding(brd: board.Board) -> np.ndarray:
+    # TODO: Don't reload with every call.
+    full_model = load_model(os.path.join(consts.TOP_LEVEL_PATH, "saved_models", "v1"))
+    layers = [full_model.get_layer(index=i) for i in range(3)]
+    new_model = Sequential()
+    for layer in layers:
+        new_model.add(layer)
+    
+    y = new_model.predict(x)
+    print(y)
+    return y
