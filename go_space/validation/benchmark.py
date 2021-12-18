@@ -15,3 +15,9 @@ if __name__ == "__main__":
     print("=================")
     print("Dumb embedding:")
     print(buhlmann.computeBuhlmannOnClasses(embeddings.dumb_embedding))
+    print()
+
+    print("==================")
+    print("NN embedding:")
+    print(buhlmann.computeBuhlmannOnClasses(embeddings.nn_embedding))
+    print()

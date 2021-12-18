@@ -9,7 +9,7 @@ from typing import List
 import attr
 import numpy as np
 
-from go_space import board, consts
+from go_space import board_lib, consts
 from go_space.embeddings import Embedding
 
 
@@ -31,10 +31,10 @@ def _momentsFromPoints(points: List[np.ndarray]) -> Moments:
     return Moments(mean=mean, var=var)
 
 
-def classMoments(embedding: Embedding, clss: List[board.BwBoardStr]) -> Moments:
+def classMoments(embedding: Embedding, clss: List[board_lib.BwBoardStr]) -> Moments:
     points = list()
     for brd in clss:
-        this_board = board.boardFromBwBoardStr(brd)
+        this_board = board_lib.boardFromBwBoardStr(brd)
         points.append(embedding(this_board))
 
     return _momentsFromPoints(points)
