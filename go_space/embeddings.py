@@ -65,10 +65,5 @@ def nn_embedding(brd: board_lib.Board) -> np.ndarray:
     datum = datum_lib.Datum(grid=brd._grid, next_pt=pt)
     x = np.stack([datum.np_feature()], axis=0)
 
-    # print(x)
     y = new_model.predict(x)
-    # print(y.shape)
-    # print(y)
-    # print(y[0])
-    # assert(False)
     return y[0]
