@@ -130,7 +130,7 @@ class DataManager(object):
         if self._read_cursor >= len(self._read_page(self._on_page)):
             self._on_page = choose_new_page()
             self._read_cursor = 0
-        
+
         result = (self._on_page, self._read_cursor)
         self._read_cursor += 1
         return result

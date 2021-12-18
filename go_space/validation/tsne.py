@@ -33,13 +33,15 @@ y = np.stack(y_, axis=0)
 tsne = TSNE(2)
 tsne_result = tsne.fit_transform(X)
 
-tsne_result_df = pd.DataFrame({'tsne_1': tsne_result[:,0], 'tsne_2': tsne_result[:,1], 'label': y})
+tsne_result_df = pd.DataFrame(
+    {"tsne_1": tsne_result[:, 0], "tsne_2": tsne_result[:, 1], "label": y}
+)
 fig, ax = plt.subplots(1)
-sns.scatterplot(x='tsne_1', y='tsne_2', hue='label', data=tsne_result_df)
-lim = (tsne_result.min()-50, tsne_result.max()+50)
+sns.scatterplot(x="tsne_1", y="tsne_2", hue="label", data=tsne_result_df)
+lim = (tsne_result.min() - 50, tsne_result.max() + 50)
 ax.set_xlim(lim)
 ax.set_ylim(lim)
-ax.set_aspect('equal')
+ax.set_aspect("equal")
 ax.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.0)
 
 plt.savefig("tsne.png")

@@ -88,7 +88,7 @@ def loop_game(sgf: str) -> Iterator[Tuple[go_types.Point, go_types.Player]]:
 NO_DATA_TO_SAVE = 40000
 
 
-#TODO: Read tasks expect zero-indexed files.
+# TODO: Read tasks expect zero-indexed files.
 def translate_files(src_dir: Path, tgt_dir: Path) -> None:
     dm = data_manager.DataManager(tgt_dir)
     batch_num = 0
@@ -103,7 +103,7 @@ def translate_files(src_dir: Path, tgt_dir: Path) -> None:
                     return
                 data_queue.append(datum)
                 batch_num += 1
-            
+
             for datum in data_queue:
                 dm.save_datum(datum)
         except:

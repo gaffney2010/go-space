@@ -100,5 +100,5 @@ class Datum(object):
         # TODO: Magic numbers
         result = [0] * 16
         r, c = self.next_pt.row, self.next_pt.col
-        result[4*r+c] = 1
+        result[4 * r + c] = 1
         return result

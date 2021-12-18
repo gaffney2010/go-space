@@ -124,5 +124,7 @@ class Grid(object):
 
         result = Grid(data_dict["size"])
         for point, player in data_dict["sparse_grid"]:
-            result[go_types.Point.from_dict(point)] = (black_stones if player == go_types.Player.Black else white_stones)
+            result[go_types.Point.from_dict(point)] = (
+                black_stones if player == go_types.Player.Black else white_stones
+            )
         return result

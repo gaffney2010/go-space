@@ -55,7 +55,9 @@ def dumb_embedding(brd: board_lib.Board) -> np.ndarray:
 
 class NNEmbed(object):
     def __init__(self):
-        full_model = load_model(os.path.join(consts.TOP_LEVEL_PATH, "saved_models", "v1"))
+        full_model = load_model(
+            os.path.join(consts.TOP_LEVEL_PATH, "saved_models", "v1")
+        )
         layers = [full_model.get_layer(index=i) for i in range(8)]
         self.new_model = Sequential()
         for layer in layers:
