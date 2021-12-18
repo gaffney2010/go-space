@@ -11,10 +11,20 @@ from go_space.nn import data_manager
 
 def layers():
     return [
-        Dense(36),
+        ZeroPadding2D(padding=2, data_format='channels_last'),
+        Conv2D(24, (5, 5), data_format='channels_last'),
         Activation('relu'),
 
-        Dense(24),
+        # ZeroPadding2D(padding=2, data_format='channels_last'),
+        # Conv2D(48, (5, 5), data_format='channels_last'),
+        # Activation('relu'),
+
+        ZeroPadding2D(padding=1, data_format='channels_last'),
+        Conv2D(12, (3, 3), data_format='channels_last'),
+        Activation('relu'),
+
+        Flatten(),
+        Dense(64),
         Activation('relu'),
 
         Dense(16, activation='softmax'),
@@ -49,7 +59,7 @@ BATCH_SIZE = 256
 
 model.fit_generator(
     generator=data_reader.generate_batches(BATCH_SIZE, data_manager.TrainTest.TRAIN),
-    epochs=3,
+    epochs=20,
     # TODO: Fix off-by-a-few error.  It may not actually be there.
     steps_per_epoch=40000 * 0.8 // BATCH_SIZE - 5,
     validation_data=data_reader.generate_batches(128, data_manager.TrainTest.TEST),

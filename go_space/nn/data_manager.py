@@ -39,7 +39,7 @@ class Page(object):
 # TODO: Clean up
 class DataManager(object):
     def __init__(self, tgt_dir):
-        # TODO: Rename cursors to be include "write"
+        # TODO: Rename cursors to be include "write".  These are a mess.
         self.page_cursor = -1
         self.entry_cursor = 0
         self.test_pages = set()
@@ -62,7 +62,7 @@ class DataManager(object):
             self.entry_cursor = len(self._read_page(self.page_cursor))
 
     def _read_page(self, page_num: int) -> Page:
-        if page_num >= self.page_cursor:
+        if page_num > self.page_cursor:
             raise exceptions.DataException(f"Page {page_num} doesn't exist")
 
         # Check cache first
