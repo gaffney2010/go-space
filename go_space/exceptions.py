@@ -6,5 +6,9 @@ class PointFormatError(FormatError):
     pass
 
 
+class TseumegoFormatError(FormatError):
+    pass
+
+
 class DataException(Exception):
     pass

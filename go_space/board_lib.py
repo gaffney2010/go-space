@@ -137,7 +137,8 @@ class MalformedJsonError(Exception):
 BwBoardStr = Dict[str, List[str]]
 
 
-def boardFromBwBoardStr(bw: BwBoardStr) -> Board:
+# TODO: Make camel case
+def boardFromBwBoardStr(bw: BwBoardStr, bw_fields: Optional[Dict[str, str]] = None) -> Board:
     """Creates a board from a parsed json
 
     Arguments:
@@ -151,21 +152,31 @@ def boardFromBwBoardStr(bw: BwBoardStr) -> Board:
             These are SGF-style position names.  See Point.fromLabel for
             acceptable format.
 
+        bw_fields: An optional dict to re-key bw.  Keys must be "black" and
+            "white".  If passed, bw must be keyed by bw_fields["black"] and
+            bw_fields["white"].
+
+            Typical example for compatibility is:
+            {"black": "AB", "white": "AW"}
+
     Returns:
         A board that has only the specified black and white pieces.
     """
+    if not bw_fields:
+        bw_fields = {"black": "black", "white": "white"}
+
     MUST_CONTAIN_FIELDS = ("black", "white")
     for field in MUST_CONTAIN_FIELDS:
-        if field not in bw:
+        if bw_fields[field] not in bw:
             raise MalformedJsonError(f"json missing field = {field}")
 
     result = Board()
 
-    for point_str in bw["black"]:
+    for point_str in bw[bw_fields["black"]]:
         result.place(
             point=go_types.Point.fromLabel(point_str), player=go_types.Player.Black
         )
-    for point_str in bw["white"]:
+    for point_str in bw[bw_fields["white"]]:
         result.place(
             point=go_types.Point.fromLabel(point_str), player=go_types.Player.White
         )

@@ -34,6 +34,8 @@ class Point(object):
 
         return r, c
 
+    # TODO: Change to from_label
+    # TODO: Should this be a non-class method to be consistent with board_lib.
     @classmethod
     def fromLabel(cls, label: str) -> "Point":
         """Returns a Point from a label
