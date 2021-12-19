@@ -10,17 +10,10 @@ import attr
 import numpy as np
 
 from go_space import board_lib, consts, embeddings, exceptions
-from go_space.go_types import chonk_lib, grid_lib, player_lib, point_lib
+from go_space.go_types import chonk_lib, grid_lib, player_lib, point_lib, tseumego_lib
 
 
 TseumegoString = Dict[str, Any]
-
-
-@attr.s
-class Tseumego(object):
-    file_name: str = attr.ib()
-    grid: grid_lib.Grid = attr.ib()
-    embedding: np.ndarray = attr.ib()
 
 
 nn_embed = embeddings.NNEmbed()
@@ -32,7 +25,7 @@ def board_from_tseumego_string(tseumego: TseumegoString) -> board_lib.Board:
     return board_lib.boardFromBwBoardStr(tseumego, translation_layer)
 
 
-def tseumego_from_file(fn: str) -> Tseumego:
+def tseumego_from_file(fn: str) -> tseumego_lib.Tseumego:
     with open(fn, "r") as f:
         tseumego = json.loads(f.read())
 
@@ -67,7 +60,7 @@ def tseumego_from_file(fn: str) -> Tseumego:
 
     embedding = embedding_func(board)
 
-    return Tseumego(file_name=fn, grid=grid, embedding=embedding)
+    return tseumego_lib.Tseumego(file_name=fn, grid=grid, embedding=embedding)
 
 
 print("Start")
