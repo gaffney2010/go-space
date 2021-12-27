@@ -1,6 +1,7 @@
 argparse
 attrs
 chardet
+flask
 keras
 matplotlib
 numpy
