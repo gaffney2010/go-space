@@ -1,17 +1,23 @@
-var canvas = document.getElementById("board");
-var ctx = canvas.getContext("2d");
-canvas.width = 731;
-canvas.height = 731;
+// Global variables for good programming
+var canvas, ctx;
+var background;
 
-var background = document.getElementById("img_bg");
-
-function draw_board() {
-    var canvas = document.getElementById("board");
-    var ctx = canvas.getContext("2d");
+function init() {
+    canvas = document.getElementById("board");
+    ctx = canvas.getContext("2d");
     canvas.width = 450;
     canvas.height = 450;
 
-    var background = document.getElementById("img_bg");
+    background = document.getElementById("img_bg");
+}
 
-    ctx.drawImage(background, 0, 0);   
+function draw_board() {
+    // var canvas = document.getElementById("board");
+    // var ctx = canvas.getContext("2d");
+    // canvas.width = 450;
+    // canvas.height = 450;
+
+    // var background = document.getElementById("img_bg");
+
+    ctx.drawImage(background, 0, 0, 450, 450);   
 }
